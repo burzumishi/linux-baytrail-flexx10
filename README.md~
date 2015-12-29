@@ -267,31 +267,6 @@ In order to boot up your system properly, it's needed to update the GRUB bootloa
 # grub-install --target i386-efi
 ```
 
-We want to copy the grubia32.efi from there to the location Ubuntu created during installation:
-
-```
-# cd /boot/efi/EFI
-# sudo cp grub/grubia32.efi ubuntu/grubia32.efi
-```
-
-This should be enough to allow you to boot from the “ubuntu” option in your EFI firmware.
-
-Before you boot, let’s add the default command line options to Grub.
-
-Open /etc/default grub in a text editor:
-
-```
-sudo nano /etc/default/grub
-```
-
-And edit the GRUB_CMDLINE_LINUX_DEFAULT exactly as we did before. When done, hit ctrl-o to save then ctrl-x to exit. Then, to update Grub:
-
-```
-sudo update-grub
-```
-
-Congratulations! you should now be able to boot/reboot directly to the Ubuntu desktop!
-
 GRUB will not boot until you save the devices boot order from UEFI BIOS, this may be a bug in the BIOS firmware.
 
 
