@@ -1,3 +1,4 @@
+```
 #      _____________________________________________________________________
 #    //                                                                     \\
 #   [|  linux-baytrail-flexx10                                               |]
@@ -7,21 +8,21 @@
 #   [|                                  Antonio Cao (@burzumishi) 2015-2016  |]
 #   [|                                                                       |]
 #    \\_____________________________________________________________________//
+```
 
-## Introduction
+# Introduction
 
 This project is an efford to get *Debian GNU/Linux* running on *NextBook Flexx 10.1* baytrail device.
 
 It should work for Ubuntu or any other Debian based distribution.
 
 
-### System Hardware Summary
+## System Hardware Summary
 
 http://nextbookusa.com/productdetail.php?product_id=26
 
 
-### Hardware
-
+## Hardware
 
 ```
 - CPU: Intel Atom Bay Trail Z3735F 
@@ -33,8 +34,7 @@ http://nextbookusa.com/productdetail.php?product_id=26
 - Bluetooth: Broadcom (on-board BCM2035 HCI?)
 ```
 
-
-#### System Information
+### System Information
 
 ```
 	Manufacturer: YIFANG
@@ -47,7 +47,7 @@ http://nextbookusa.com/productdetail.php?product_id=26
 	Family: M1015BFP T11220300
 ```
 
-#### Base Board Information
+### Base Board Information
 
 ```
 	Manufacturer: YIFANG
@@ -64,7 +64,7 @@ http://nextbookusa.com/productdetail.php?product_id=26
 	Contained Object Handles: 0
 ```
 
-#### lshw -short -quiet
+### lshw -short -quiet
 
 ```
 H/W path                 Device     Class      Description
@@ -85,7 +85,7 @@ H/W path                 Device     Class      Description
 /1                       wlan0      network    Wireless interface
 ```
 
-#### lspci
+### lspci
 
 ```
 00:00.0 Host bridge: Intel Corporation Atom Processor Z36xxx/Z37xxx Series SoC Transaction Register (rev 0f)
@@ -96,7 +96,7 @@ H/W path                 Device     Class      Description
 
 ```
 
-#### lsusb
+### lsusb
 
 ```
 Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
@@ -107,7 +107,7 @@ Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
 ```
 
 
-### Project Status
+## Project Status
 
  * Boot Standard Kernel {OK}
  * Detect hard drives {OK}
@@ -136,7 +136,7 @@ Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
 Legend : {OK} = OK ; {X} Unsupported(No Driver) ; /!\ = Error (Couldn't get it working); [?] Unknown, Not Test; [-] Not-applicable; {i} = Configuration Required;  X-( = Only works with a non-free driver and or firmware
 
 
-## Documentation
+# Documentation
 
 I would like to thank to the following sites, as they helped me a lot to make all this work on Flexx10, because of similarities between both devices:
 
@@ -146,7 +146,7 @@ https://sturmflut.github.io/linux/ubuntu/2015/02/04/installing-ubuntu-on-baytrai
 ```
 
 
-## Repositories
+# Repositories
 
 ```
 Linux Kernel:     https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
@@ -160,7 +160,7 @@ Bluetooth:        https://github.com/hadess/rtl8723bs_bt
 Sound ASoC:       https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git
 ```
 
-## Installation
+# Installation
 
 ```
  * Requirements
@@ -174,7 +174,7 @@ Sound ASoC:       https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.
 ```
 
 
-### Requirements
+## Requirements
 
 ```
 A BayTrail tablet.
@@ -183,7 +183,7 @@ Optional: A storage medium (USB, SD-Card etc.) big enough to back up the Windows
 Rufus: http://rufus.akeo.ie
 ```
 
-### Important Notes
+## Important Notes
 
 
 {i} The following information and procedures are mostly extracted from the T100TA model and adappted to the Flexx10. The T100TA has an hardware similar to that one of the Flexx10, informations and procedures regarding these two models can be usefully shared.
@@ -199,7 +199,7 @@ Rufus: http://rufus.akeo.ie
 {i} The Flexx 10.1 is a mixed mode EFI system (i.e. a 64-bit CPU combined with a 32-bit EFI) without any legacy BIOS mode. By default, the Debian i386 installer images should boot on this machine via UEFI and let you install a complete 32-bit (i386) system. If you use the multi-arch amd64/i386 netinst or DVD image, you will also be able to install in 64-bit mode. You might expect slightly better performance that way, but the limited memory on the machine (2 GiB) maybe will become more of an issue. Multi-arch DVD images must be modified before booting.
 
 
-### BIOS Access
+## BIOS Access
 
 1. To disable Secure Boot press F2 when the laptop is starting. You should get a BIOS-alike configuration application where Secure Boot may be disabled (Security tab).
 
@@ -212,7 +212,7 @@ Or just open a cmd prompt and type: shutdown.exe /r /o
 That will restart into the blue screen with options. 
 
 
-#### To Turn "Fast Startup" On or Off in System Settings
+### To Turn "Fast Startup" On or Off in System Settings
 
 ```
 1. Open the Control Panel (icons view), and click on the Power Options icon.
@@ -243,7 +243,7 @@ That will restart into the blue screen with options.
 8. You can now close the Power Options window if you like.
 ```
 
-#### Create USB Media
+### Create USB Media
 
 Use Rufus with GPT Partition Table layout and formated with FAT32 to create a USB install disk. 
 
@@ -252,7 +252,7 @@ Copy grubia32.efi in D:\efi\grub\
 NOTE: Do not overwrite grubx64.efi or grub.efi!
 
 
-#### Booting Installation or Live Image
+### Booting Installation or Live Image
 
 Now, insert the USB stick and reboot to the firmware (BIOS). You can do this in Windows by holding shift when pressing “restart”, then touching Troubleshoot → Advanced Options → UEFI Firmware Settings → Restart.
 
@@ -263,7 +263,7 @@ Press F10 to save settings, and after a few seconds you will be in the GRUB boot
 Then press F10 to boot. You should get all the way to the Installation or Desktop.
 
 
-#### Installing Linux
+### Installing Linux
 
 The partitioning scheme you choose is up to you — but you will need to preserve the EFI partition, so don’t just partition the entire disk for Linux.
 
@@ -272,7 +272,7 @@ In addition to the EFI partition, I prefer separate /, /home and /boot mount poi
 When done, reboot, leaving the USB stick in.
 
 
-#### First boot
+### First boot
 
 Linux won’t boot yet ;(
 
@@ -301,7 +301,7 @@ Then boot with: boot
 With luck after hitting Enter, you’ll boot through to Linux. If not, don’t be disheartened — keep trying, at this point your system is installed, review your settings.
 
 
-## System Configuration
+# System Configuration
 
 Once the system has booted sucessfully, it needs some tweaking:
 
@@ -320,7 +320,7 @@ Once the system has booted sucessfully, it needs some tweaking:
  * Built-in camera
 ```
 
-### WiFi
+## WiFi
 
 The wifi device is an on-board SDIO device Realtek R8723BS, firmware and module required.
 
@@ -346,7 +346,7 @@ scripts/install_rtl8723bs_debian.sh
 NOTE: Wifi and a network conection are required to continue!
 
 
-#### Kernel (GIT)
+## Kernel (GIT)
 
 The best option is to upgrade the kernel to the latest review published in github.
 
@@ -380,7 +380,7 @@ dpkg -i linux-firmware-image-4.4.0-rc7+_4.4.0-rc7+-1_amd64.deb linux-headers-4.4
 ```
 
 
-#### Bootloader (GRUB)
+## Bootloader (GRUB)
 
 In order to boot up your system properly, it's needed to update GRUB's bootloader files and config:
 
@@ -417,7 +417,7 @@ Congratulations! you should now be able to boot/reboot directly to Debian!
 GRUB will not boot until you save the devices boot order from UEFI BIOS, this may be a bug in the BIOS firmware.
 
 
-### Power Management
+## Power Management
 
 Status, Intel Crystal Cove PMIC
 
@@ -426,7 +426,7 @@ The power management integrated circuit (PMIC) of the Intel Baytrail is called C
 Suspend to RAM does not work and sends the machine into a state from which one can only recover by forcing the shutdown. Hibernation partially works as it, like the suspend, requires to force the shutdown and at the following boot the system recovers from the hibernation but with some glitches. Some suggestions are discussed in this thread.
 
 
-### Screen brightness
+## Screen brightness
 
 Because the Crystal Cove PMIC is not yet fully supported the brightness level of the screen cannot be adjusted and it is locked at the maximum value. Some patches are discussed in this discussion.
 
@@ -465,7 +465,7 @@ $  xrandr --output DSI1 --brightness 0.8
 The script brightness_ctl.Stretch_flexx10.sh makes use of the command above to progressively reduce the screen brightness.
 
 
-### CPU C-states issue with the internal eMMC
+## CPU C-states issue with the internal eMMC
 
 This issue causes instability during mmc data operations, leading possibly to data loss and file system corruption, and it is discussed in this thread and a patch seems to be already proposed in this discussion. However a proper fix doesn't seem to be available yet. As a workaround it is necessary to boot the system with the kernel parameter:
 
@@ -475,7 +475,7 @@ intel_idle.max_cstate=0 intel_pstates=disabled
 
 Check this post for further suggestions and instruction. Please be aware that using this workaround can impact on the battery duration, but it is better than lose data.
 
-### Touchscreen
+## Touchscreen
 
 Intel Graphics using i915 driver, X.org works.
 
@@ -497,7 +497,7 @@ $ xinput
     ↳ SINO WEALTH USB KEYBOARD                	id=7	[slave  keyboard (3)]
 
 
-### Audio
+## Audio
 
 The device is an Intel SST Audio / Realtek RT5640. The firmware can be installed with:
 
@@ -517,7 +517,7 @@ Please be aware that there are reports indicating that in some cases the sound c
 For the linux kernel 3.16 in Debian Jessie use the firmware and the alsa configuration files available here. However, as suggested in the important notes above, it is not advisable to use this kernel due to a lot of components unsupported.
 
 
-### microSD Card Reader
+## microSD Card Reader
 
 The following action allows the card reader to work:
 
@@ -531,12 +531,12 @@ After a reboot the card reader should be working.
 To use the microSD card reader for the installation procedure, or at the first boot of the system, at boot edit the GRUB menu entry and add to the linux line the option sdhci.debug_quirks=0x8000.
 
 
-### Built-in camera
+## Built-in camera
 
 The model should be "xxxxxxx". Further information has to be retrieved.
 
 
-## AUTHORS
+# AUTHORS
 
 ```
 Antonio Cao (@burzumishi) 2015-2016
