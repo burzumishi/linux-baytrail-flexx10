@@ -479,12 +479,14 @@ Check this post for further suggestions and instruction. Please be aware that us
 
 Intel Graphics using i915 driver, X.org works.
 
-The accelerometers are not supported yet, therefore the screen can only be manually rotated using xrandr. However the touchscreen inputs also have to be manually adjusted with xinput to be coherent with the rotations. For an example see the script ts_rotate.Stretch_flex10.sh.
+The accelerometers are not supported yet, therefore the screen can only be manually rotated using xrandr. However the touchscreen inputs also have to be manually adjusted with xinput to be coherent with the rotations. 
+
+For an example see the script ts_rotate.Stretch_flex10.sh.
 
 The accelerometers work as of at least linux-image-4.3.0-rc3-amd64.
 
 The touchscreen is identified as FTSC1000:
-
+```
 $ xinput
 ⎡ Virtual core pointer                    	id=2	[master pointer  (3)]
 ⎜   ↳ Virtual core XTEST pointer              	id=4	[slave  pointer  (2)]
@@ -495,7 +497,7 @@ $ xinput
     ↳ Video Bus                               	id=6	[slave  keyboard (3)]
     ↳ gpio-keys                               	id=10	[slave  keyboard (3)]
     ↳ SINO WEALTH USB KEYBOARD                	id=7	[slave  keyboard (3)]
-
+```
 
 ## Audio
 
