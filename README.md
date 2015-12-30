@@ -36,77 +36,7 @@ http://nextbookusa.com/productdetail.php?product_id=26
 - Bluetooth: Realtek RTL8723BS_BT
 ```
 
-### System Information
-
-```
-	Manufacturer: YIFANG
-	Product Name: NXW101QC232
-	Version: Type1 - TBD by OEM
-	Serial Number: YF101515433
-	UUID: 12345678-1234-5678-90AB-CDDEEFAABBCC
-	Wake-up Type: Power Switch
-	SKU Number: Type1 - SKU0
-	Family: M1015BFP T11220300
-```
-
-### Base Board Information
-
-```
-	Manufacturer: YIFANG
-	Product Name: EBM1015BFP
-	Version: 1.2
-	Serial Number: Type2 - Board Serial Number
-	Asset Tag: Type2 - Board Asset Tag
-	Features:
-		Board is a hosting board
-		Board is replaceable
-	Location In Chassis: Type2 - Board Chassis Location
-	Chassis Handle: 0x0003
-	Type: Motherboard
-	Contained Object Handles: 0
-```
-
-### lshw -short -quiet
-
-```
-H/W path                 Device     Class      Description
-==========================================================
-                                    system     Computer
-/0                                  bus        Motherboard
-/0/0                                memory     1943MiB System memory
-/0/1                                processor  Intel(R) Atom(TM) CPU  Z3735F @ 1
-/0/100                              bridge     Atom Processor Z36xxx/Z37xxx Seri
-/0/100/2                            display    Atom Processor Z36xxx/Z37xxx Seri
-/0/100/14                           bus        Atom Processor Z36xxx/Z37xxx Seri
-/0/100/14/0              usb2       bus        xHCI Host Controller
-/0/100/14/1              usb1       bus        xHCI Host Controller
-/0/100/14/1/2                       bus        USB2.0 Hub
-/0/100/14/1/2/1                     input      USB KEYBOARD
-/0/100/1a                           generic    Atom Processor Z36xxx/Z37xxx Seri
-/0/100/1f                           bridge     Atom Processor Z36xxx/Z37xxx Seri
-/1                       wlan0      network    Wireless interface
-```
-
-### lspci
-
-```
-00:00.0 Host bridge: Intel Corporation Atom Processor Z36xxx/Z37xxx Series SoC Transaction Register (rev 0f)
-00:02.0 VGA compatible controller: Intel Corporation Atom Processor Z36xxx/Z37xxx Series Graphics & Display (rev 0f)
-00:14.0 USB controller: Intel Corporation Atom Processor Z36xxx/Z37xxx Series USB xHCI (rev 0f)
-00:1a.0 Encryption controller: Intel Corporation Atom Processor Z36xxx/Z37xxx Series Trusted Execution Engine (rev 0f)
-00:1f.0 ISA bridge: Intel Corporation Atom Processor Z36xxx/Z37xxx Series Power Control Unit (rev 0f)
-
-```
-
-### lsusb
-
-```
-Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
-Bus 001 Device 013: ID 0930:6545 Toshiba Corp. Kingston DataTraveler 102/2.0 / HEMA Flash Drive 2 GB / PNY Attache 4GB Stick
-Bus 001 Device 012: ID 258a:6a88
-Bus 001 Device 011: ID 05e3:0608 Genesys Logic, Inc. Hub
-Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-```
+https://github.com/burzumishi/linux-baytrail-flexx10/wiki/Sytem-Hardware
 
 
 ## Project Status
@@ -138,17 +68,7 @@ Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
 Legend : {OK} = OK ; {X} Unsupported(No Driver) ; /!\ = Error (Couldn't get it working); [?] Unknown, Not Test; [-] Not-applicable; {i} = Configuration Required;  X-( = Only works with a non-free driver and or firmware
 
 
-# Documentation
 
-I would like to thank to the following sites, as they helped me a lot to make all this work on Flexx10, because of similarities between both devices:
-
-```
-http://www.jfwhome.com/2014/03/07/perfect-ubuntu-or-other-linux-on-the-asus-transformer-book-t100/
-http://forums.linuxmint.com/viewtopic.php?f=18&t=201040&p=1052609
-http://forums.linuxmint.com/viewtopic.php?f=53&t=204172
-https://wiki.debian.org/InstallingDebianOn/Asus/T100TA
-https://sturmflut.github.io/linux/ubuntu/2015/02/04/installing-ubuntu-on-baytrail-tablets-version-2/
-```
 
 
 # Repositories
@@ -384,6 +304,7 @@ Install all packages except "dbg":
 dpkg -i linux-firmware-image-4.4.0-rc7+_4.4.0-rc7+-1_amd64.deb linux-headers-4.4.0-rc7+_4.4.0-rc7+-1_amd64.deb linux-image-4.4.0-rc7+_4.4.0-rc7+-1_amd64.deb linux-libc-dev_4.4.0-rc7+-1_amd64.deb
 ```
 
+NOTE: REBUILD WIFI MODULE!
 
 ## Bootloader (GRUB)
 
@@ -541,6 +462,19 @@ To use the microSD card reader for the installation procedure, or at the first b
 ## Built-in camera
 
 The model should be "xxxxxxx". Further information has to be retrieved.
+
+
+# Documentation
+
+I would like to thank these sites, as they were very useful because of similarities between both devices:
+
+```
+http://www.jfwhome.com/2014/03/07/perfect-ubuntu-or-other-linux-on-the-asus-transformer-book-t100/
+http://forums.linuxmint.com/viewtopic.php?f=18&t=201040&p=1052609
+http://forums.linuxmint.com/viewtopic.php?f=53&t=204172
+https://wiki.debian.org/InstallingDebianOn/Asus/T100TA
+https://sturmflut.github.io/linux/ubuntu/2015/02/04/installing-ubuntu-on-baytrail-tablets-version-2/
+```
 
 
 # AUTHORS
