@@ -1,18 +1,20 @@
 ```
-#      _____________________________________________________________________
-#    //                                                                     \\
-#   [|  linux-baytrail-flexx10                                               |]
-#   [|                                                                       |]
-#   [|  Install GNU/Linux on NextBook Flexx 10.1 Baytrail                    |]
-#   [|                                                                       |]
-#   [|                                  Antonio Cao (@burzumishi) 2015-2016  |]
-#   [|                                                                       |]
-#    \\_____________________________________________________________________//
+   ___________________________________________________
+ //                                                   \\
+[|                                                     |]
+[|  linux-baytrail-flexx10                             |]
+[|                                                     |]
+[|  Install GNU/Linux on NextBook Flexx 10.1 Baytrail  |]
+[|                                                     |]
+[|                                                     |]
+[|                Antonio Cao (@burzumishi) 2015-2016  |]
+[|                                                     |]
+ \\___________________________________________________//
 ```
 
 # Introduction
 
-This project is an efford to get *Debian GNU/Linux* running on *NextBook Flexx 10.1* baytrail device.
+This project is an efford to get *Debian GNU/Linux* running on *NextBook Flexx 10.1*, an Intel Atom Bay Trail device.
 
 It should work for Ubuntu or any other Debian based distribution.
 
@@ -27,11 +29,11 @@ http://nextbookusa.com/productdetail.php?product_id=26
 ```
 - CPU: Intel Atom Bay Trail Z3735F 
 - Video card: Intel HD Graphics (Atom Processor Z36xxx/Z37xxx Series Graphics & Display) 
-- Screen: 10.1" HD SLIM WV(GL,LED-TP)
+- Screen: 10.1" - I2C HID v1.00 Device [FTSC1000:00 2808:1015] on i2c-FTSC1000:00
 - Wireless card: Realtek RTL8723BS Wireless LAN 80211n SDIO Network Adapter
-- Disks: Toshiba 032GE4 SSD eMMC 32 GB (/dev/mmcblk0)
+- Disks: mmcblk0: mmc0:0001 NCard  28.9 GiB 
 - RAM: LPDDR3 1067 2GB (on-board) 
-- Bluetooth: Broadcom (on-board BCM2035 HCI?)
+- Bluetooth: Realtek RTL8723BS_BT
 ```
 
 ### System Information
@@ -141,6 +143,9 @@ Legend : {OK} = OK ; {X} Unsupported(No Driver) ; /!\ = Error (Couldn't get it w
 I would like to thank to the following sites, as they helped me a lot to make all this work on Flexx10, because of similarities between both devices:
 
 ```
+http://www.jfwhome.com/2014/03/07/perfect-ubuntu-or-other-linux-on-the-asus-transformer-book-t100/
+http://forums.linuxmint.com/viewtopic.php?f=18&t=201040&p=1052609
+http://forums.linuxmint.com/viewtopic.php?f=53&t=204172
 https://wiki.debian.org/InstallingDebianOn/Asus/T100TA
 https://sturmflut.github.io/linux/ubuntu/2015/02/04/installing-ubuntu-on-baytrail-tablets-version-2/
 ```
@@ -156,7 +161,7 @@ Intel ASoC:       https://git.kernel.org/pub/scm/linux/kernel/git/lrg/asoc.git
 Thermal SoC:      https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
 TI Thermal SoC:   https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/ti-soc-thermal.git
 WiFi:             https://github.com/hadess/rtl8723bs
-Bluetooth:        https://github.com/hadess/rtl8723bs_bt
+Bluetooth:        https://github.com/lwfinger/rtl8723bs_bt
 Sound ASoC:       https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git
 ```
 
