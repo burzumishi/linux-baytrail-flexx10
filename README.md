@@ -1,88 +1,68 @@
-```
-   ___________________________________________________
- //                                                   \\
-[|                                                     |]
-[|  linux-baytrail-flexx10                             |]
-[|                                                     |]
-[|  Install GNU/Linux on NextBook Flexx 10.1 Baytrail  |]
-[|                                                     |]
-[|                                                     |]
-[|                Antonio Cao (@burzumishi) 2015-2016  |]
-[|                                                     |]
- \\___________________________________________________//
-```
-
 # Introduction
 
-This project is an efford to get *Debian GNU/Linux* running on *NextBook Flexx 10.1*, an Intel Atom Bay Trail device.
+This project is an efford to get **Debian GNU/Linux** running on **[Nextbook Flexx 10.1"] (http://nextbookusa.com/productdetail.php?product_id=26)** Intel Atom Bay Trail device.
 
-It should work for Ubuntu or any other Debian based distribution.
+It should work for **[Ubuntu] (http://www.ubuntu.com)** or any other **[Debian] (http://www.debian.org)** based distribution. Can be applied to any other GNU/Linux with some tweaking.
 
 
 ## System Hardware Summary
 
-http://nextbookusa.com/productdetail.php?product_id=26
+**[Nextbook Flexx 10.1"] (http://nextbookusa.com/productdetail.php?product_id=26)**
 
 
 ## Hardware
 
 ```
-- CPU: Intel Atom Bay Trail Z3735F 
-- Video card: Intel HD Graphics (Atom Processor Z36xxx/Z37xxx Series Graphics & Display) 
-- Screen: 10.1" - I2C HID v1.00 Device [FTSC1000:00 2808:1015] on i2c-FTSC1000:00
-- Wireless card: Realtek RTL8723BS Wireless LAN 80211n SDIO Network Adapter
-- Disks: mmcblk0: mmc0:0001 NCard  28.9 GiB 
-- RAM: LPDDR3 1067 2GB (on-board) 
-- Bluetooth: Realtek RTL8723BS_BT
+- CPU: **Intel Atom Bay Trail Z3735F**
+- Video: **Intel HD Graphics (Atom Processor Z36xxx/Z37xxx Series Graphics & Display)** 
+- Screen: **10.1" - I2C HID v1.00 Device [FTSC1000:00 2808:1015] on i2c-FTSC1000:00**
+- WiFi: **Realtek RTL8723BS Wireless LAN 80211n SDIO Network Adapter**
+- Disks: **mmcblk0: mmc0:0001 NCard  28.9 GiB** 
+- RAM: **LPDDR3 1067 2GB (on-board)** 
+- BT: **Realtek RTL8723BS_BT**
 ```
 
-https://github.com/burzumishi/linux-baytrail-flexx10/wiki/Sytem-Hardware
+**[Full System Hardware Info] (https://github.com/burzumishi/linux-baytrail-flexx10/wiki/Sytem-Hardware)**
 
 
 ## Project Status
 
- * Boot Standard Kernel {OK}
- * Detect hard drives {OK}
- * Shutdown /!\
- * Reboot /!\
- * Hibernation /!\
- * Sleep / Suspend /!\
- * Battery monitor /!\
- * Xorg&XWayland {OK}
-   - OpenGL {OK}
-   - Resize-and-Rotate(randr) {i}
- * Screen backlight /!\
- * Light sensor /!\
- * Switch to External Screen (HDMI) [?]
+ * Boot Standard Kernel **{OK}**
+ * Detect hard drives **{OK}**
+ * Shutdown **/!\**
+ * Reboot **/!\**
+ * Hibernation **/!\**
+ * Sleep / Suspend **/!\**
+ * Battery monitor **/!\**
+ * Xorg&XWayland **{OK}**
+   - OpenGL **{OK}**
+   - Resize-and-Rotate(randr) **{i}**
+ * Screen backlight **/!\**
+ * Light sensor **/!\**
+ * Switch to External Screen (HDMI) **[?]**
  * Mouse
-   - Built-in (Touchpad) {OK}
-   - Built-in (Touchscreen) {OK}
- * Bluetooth {i} /!\
- * Wireless/Wifi {i} X-(
- * Keyboard's Hotkeys [?]
- * Sound {i} X-(
- * MicroSD card reader [?]
- * Built-in camera {X}
- * Accelerometers {i}
+   - Built-in (Touchpad) **{OK}**
+   - Built-in (Touchscreen) **{OK}**
+ * Bluetooth {i} **/!\**
+ * Wireless/Wifi **{i} X-(**
+ * Keyboard's Hotkeys **[?]**
+ * Sound **{i} X-(**
+ * MicroSD card reader **[?]**
+ * Built-in camera **{X}**
+ * Accelerometers **{i}**
 
-Legend : {OK} = OK ; {X} Unsupported(No Driver) ; /!\ = Error (Couldn't get it working); [?] Unknown, Not Test; [-] Not-applicable; {i} = Configuration Required;  X-( = Only works with a non-free driver and or firmware
-
-
-
+Legend : **{OK}** = OK ; **{X}** = Unsupported(No Driver) ; **/!\** = Error (Couldn't get it working); **[?]** = Unknown, Not Test; **[-]** = Not-applicable; **{i}** = Configuration Required;  **X-(** = Only works with a non-free driver and or firmware
 
 
 # Repositories
 
 ```
-Linux Kernel:     https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
-Linux Firmware:   https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git
-Power Management: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Intel ASoC:       https://git.kernel.org/pub/scm/linux/kernel/git/lrg/asoc.git
-Thermal SoC:      https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
-TI Thermal SoC:   https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/ti-soc-thermal.git
-WiFi:             https://github.com/hadess/rtl8723bs
-Bluetooth:        https://github.com/lwfinger/rtl8723bs_bt
-Sound ASoC:       https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git
+**[Linux Kernel]     (https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git)**
+**[Linux Firmware]   (https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git)**
+**[Power Management] (https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git)**
+**[Sound ASoC]       (https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git)**
+**[WiFi ]            (https://github.com/hadess/rtl8723bs)**
+**[Bluetooth]        (https://github.com/lwfinger/rtl8723bs_bt)**
 ```
 
 # Installation
@@ -480,6 +460,6 @@ https://sturmflut.github.io/linux/ubuntu/2015/02/04/installing-ubuntu-on-baytrai
 # AUTHORS
 
 ```
-Antonio Cao (@burzumishi) 2015-2016
+2015-2016 **Antonio Cao** ([@burzumishi] (https://github.com/burzumishi)) under the **'GNU GPL v2 LICENSE'**.
 ```
 
