@@ -205,6 +205,7 @@ Then boot with: boot
 
 With luck after hitting Enter, you’ll boot through to Linux. If not, don’t be disheartened — keep trying, at this point your system is installed, review your settings.
 
+You can use "grub/grub_boot_commands.txt" as example.
 
 # System Configuration
 
@@ -262,7 +263,7 @@ scripts/kernel_git.sh
 Once you have downloaded the kernel copy the configuration file from: 
 
 ```
-cp kernel/config-4.3.3-rc7-flexx10 /your/kernel/source/.config
+cp kernel/config-4.4.0-rc8+ /your/kernel/source/.config
 cd source
 make menuconfig
 make -j 4 deb-pkg
@@ -271,17 +272,17 @@ make -j 4 deb-pkg
 Be patient this task takes about 3 or 4 hours, when it's finished you will get the debian package files:
 
 ```
-../linux-firmware-image-4.4.0-rc7+_4.4.0-rc7+-1_amd64.deb
-../linux-headers-4.4.0-rc7+_4.4.0-rc7+-1_amd64.deb
-../linux-image-4.4.0-rc7+_4.4.0-rc7+-1_amd64.deb
-../linux-image-4.4.0-rc7+-dbg_4.4.0-rc7+-1_amd64.deb
-../linux-libc-dev_4.4.0-rc7+-1_amd64.deb
+../linux-firmware-image-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb
+../linux-headers-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb
+../linux-image-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb
+../linux-image-4.4.0-rc8+-dbg_4.4.0-rc8+-1_amd64.deb
+../linux-libc-dev_4.4.0-rc8+-1_amd64.deb
 ```
 
 Install all packages except "dbg":
 
 ```
-dpkg -i linux-firmware-image-4.4.0-rc7+_4.4.0-rc7+-1_amd64.deb linux-headers-4.4.0-rc7+_4.4.0-rc7+-1_amd64.deb linux-image-4.4.0-rc7+_4.4.0-rc7+-1_amd64.deb linux-libc-dev_4.4.0-rc7+-1_amd64.deb
+dpkg -i linux-firmware-image-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb linux-headers-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb linux-image-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb linux-libc-dev_4.4.0-rc8+-1_amd64.deb
 ```
 
 NOTE: REBUILD WIFI MODULE!
@@ -416,9 +417,22 @@ The device is an Intel SST Audio / Realtek RT5640. The firmware can be installed
 However a manual configuration of the device is still required. It is possible to do it using alsactl (available in the package alsa-utils) and a proper configuration file. The T100 Ubuntu community on G+ has many configuration files you can try but this one seems to work well. Download and apply the configuration file in this way:
 
 ```
-# cp t100_B.state /var/lib/alsa/asound.state
+# cp asound.state /var/lib/alsa/
 # alsactl restore
+# sh set-alsa-bytcr-rt5640.sh
 ```
+
+This will enable your sound card, at this moment I only got some crakles at bootand login time.
+
+```
+[  994.246832]  Baytrail Audio Port: sst: error code = -22
+[  994.246840] bytcr_rt5640 bytcr_rt5640: BUG: , pos = -22, buffer size = 203830, period size = 1199
+[  994.246863]  Baytrail Audio Port: sst: error code = -22
+[  994.246870] bytcr_rt5640 bytcr_rt5640: BUG: , pos = -22, buffer size = 203830, period size = 1199
+
+```
+
+All these firmware errors will increase your kernel boot time.
 
 Please be aware that there are reports indicating that in some cases the sound can be distorted and the speakers can be even damaged if the volume is high. Be careful in doing tests. Headphones work too but switching from the speaker is not automatic, it can be done using the audio manager of the DE or a dedicated application like pavucontrol.
 

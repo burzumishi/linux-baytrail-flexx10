@@ -1,0 +1,6 @@
+set root='(hd1,gpt5)'
+
+linux /boot/vmlinuz root=/dev/mmcblk0p5 quiet intel_pstate=disabled
+initrd /boot/initrd
+
+boot
