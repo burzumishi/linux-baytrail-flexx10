@@ -4,6 +4,8 @@ This project is an efford to get **Debian GNU/Linux** running on **[Nextbook Fle
 
 It should work for **[Ubuntu] (http://www.ubuntu.com)** or any other **[Debian] (http://www.debian.org)** based distribution. Can be applied to any other GNU/Linux with some tweaking.
 
+**Arch Linux** support added (thanks to: @nicman23)
+
 
 ## System Hardware Summary
 
