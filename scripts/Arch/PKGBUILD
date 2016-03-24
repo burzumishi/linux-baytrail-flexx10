@@ -36,7 +36,7 @@ pkgver() {
 prepare() {
   cd "${_srcname}"
 
-  cat "${srcdir}/linux-baytrail-flexx10/kernel/config-4.4.0-rc8+" > ./.config
+  cat "${srcdir}/linux-baytrail-flexx10/kernel/config-4.5.0+" > ./.config
 
 #baytrail fuckery
 # Git complains if user is not already set
