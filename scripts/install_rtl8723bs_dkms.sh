@@ -14,7 +14,7 @@ if [ ! -z $(uname -r | grep ARCH) ] ; then
 fi
 
 git clone https://github.com/hadess/rtl8723bs.git
-cp rtl8723bs /usr/src/rtl8723bs-1.0/
-cp dkms.conf /usr/src/rtl8723bs-1.0/dkms.conf
+cp rtl8723bs /usr/src/rtl8723bs/1.0/build
+cp dkms.conf /usr/src/rtl8723bs/1.0/build/dkms.conf
 dkms add -m rtl8723bs -v 1.0
 dkms build -m rtl8723bs -v 1.0 && dkms install -m rtl8723bs -v 1.0 || true
