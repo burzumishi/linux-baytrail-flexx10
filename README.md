@@ -9,6 +9,8 @@ This document has been tested on:
 - **[ElementaryOS] (https://elementary.io)**
 - **[Arch Linux] (https://www.archlinux.org)** (Thanks to: **@nicman23**)
 
+NOTE: It was helpful for testing an **Android-x86** image installed on a USB!
+
 ## System Hardware Summary
 
 **[Nextbook Flexx 10.1"] (http://nextbookusa.com/productdetail.php?product_id=26)**
