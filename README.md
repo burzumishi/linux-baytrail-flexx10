@@ -7,7 +7,7 @@ This document has been tested on:
 - **[Debian] (http://www.debian.org)**
 - **[Ubuntu] (http://www.ubuntu.com)**
 - **[ElementaryOS] (https://elementary.io)**
-- **[Arch Linux] (https://www.archlinux.org)** (Thanks to: *@nicman23*)
+- **[Arch Linux] (https://www.archlinux.org)** (Thanks to: **@nicman23**)
 
 ## System Hardware Summary
 
