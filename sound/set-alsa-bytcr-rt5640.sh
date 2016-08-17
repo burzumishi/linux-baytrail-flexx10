@@ -25,4 +25,4 @@ amixer -c0 sset "SPOR MIX DAC R1" on
 amixer -c0 sset "Speaker L" on
 amixer -c0 sset "Speaker R" on
 amixer -c0 sset "Headphone" off
-amixer -c0 sset "Ext Spk" on
+amixer -c0 sset "Speaker" on
