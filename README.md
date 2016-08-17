@@ -34,26 +34,26 @@ This document has been tested on:
  * Boot Standard Kernel **{OK}**
  * Detect hard drives **{OK}**
  * Shutdown **/!\**
- * Reboot **/!\**
+ * Reboot **{OK}**
  * Hibernation **/!\**
  * Sleep / Suspend **/!\**
- * Battery monitor **/!\**
+ * Battery monitor **{i}**
  * Xorg&XWayland **{OK}**
    - OpenGL **{OK}**
    - Resize-and-Rotate(randr) **{i}**
- * Screen backlight **/!\**
+ * Screen backlight **{i}**
  * Light sensor **/!\**
  * Switch to External Screen (HDMI) **[?]**
  * Mouse
    - Built-in (Touchpad) **{OK}**
-   - Built-in (Touchscreen) **{OK}**
- * Bluetooth {i} **/!\**
- * Wireless/Wifi **{i} X-(**
+   - Built-in (Touchscreen) **{i}**
+ * Bluetooth {i} **{i}**
+ * Wireless/Wifi **{OK}**
  * Keyboard's Hotkeys **[?]**
- * Sound **{i} X-(**
+ * Sound **{i}**
  * MicroSD card reader **[?]**
  * Built-in camera **{X}**
- * Accelerometers **{i}**
+ * Accelerometers **{X}**
 
 Legend : **{OK}** = OK ; **{X}** = Unsupported(No Driver) ; **/!\** = Error (Couldn't get it working); **[?]** = Unknown, Not Test; **[-]** = Not-applicable; **{i}** = Configuration Required;  **X-(** = Only works with a non-free driver and or firmware
 
