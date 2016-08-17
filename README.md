@@ -1,15 +1,20 @@
 # Introduction
 
-This project is an efford to get **GNU/Linux** running on **[Nextbook Flexx 10.1"] (http://nextbookusa.com/productdetail.php?product_id=26)** Intel Atom Bay Trail device.
+This project is an efford to get **GNU/Linux** running on **[Nextbook Flexx 10.1"] (http://nextbookusa.com/productdetail.php?product_id=26)** Intel Atom Bay Trail device. 
 
-This document has been tested on:
+NOTE: *Fleex 9 has almost the same hardware.*
+
+This document has been tested with the following "GNU/Linux" distributions:
 
 - **[Debian] (http://www.debian.org)**
 - **[Ubuntu] (http://www.ubuntu.com)**
 - **[ElementaryOS] (https://elementary.io)**
 - **[Arch Linux] (https://www.archlinux.org)** (Thanks to: **@nicman23**)
 
-NOTE: It was helpful for testing an **Android-x86** image installed on a USB!
+Boot, Kernel and ALSA documentation can be useful for:
+
+- **[Android-x86] (http://www.android-x86.org)** (Installed on USB stick ... it worked, but I have not written any doc yet ...)
+
 
 ## System Hardware Summary
 
@@ -159,9 +164,9 @@ That will restart into the blue screen with options.
 
 Use Rufus with GPT Partition Table layout and formated with FAT32 to create a USB install disk. 
 
-Copy grubia32.efi in D:\efi\grub\
+Copy "grubia32.efi" in "D:\efi\grub\"
 
-NOTE: Do not overwrite grubx64.efi or grub.efi!
+NOTE: Do not overwrite "grubx64.efi" or "grub.efi"!
 
 
 ### Booting Installation or Live Image
