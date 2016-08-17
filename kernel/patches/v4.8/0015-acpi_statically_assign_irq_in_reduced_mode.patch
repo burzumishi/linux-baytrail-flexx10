@@ -1,0 +1,44 @@
+From 46524ace94eaf68c9719725472ab4ea28d079a7b Mon Sep 17 00:00:00 2001
+From: Aubrey Li <aubrey.li@intel.com>
+Date: Mon, 30 Mar 2015 10:50:09 -0500
+Subject: [PATCH] x86/platform, acpi: Statically assign IRQ numbers in ACPI
+ hardware reduced mode
+
+We should be able to dynamically assign IRQ number on the platform in ACPI
+Hardware-reduced mode, but on the Bay Trail-T(ASUS-T100) platform, there is
+a RTC device still using the legacy hardcoded IRQ8, which could cause the
+following error:
+
+7486341a98f: genirq: Flags mismatch irq 8. 00000080 (mmc0) vs. 00000000 (rtc0)
+So we want to statically assign IRQ numbers in ACPI hardware reduced mode to
+fix this error
+
+Signed-off-by: Li Aubrey <aubrey.li@linux.intel.com>
+Cc: Alan Cox <alan@linux.intel.com>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>
+---
+ arch/x86/kernel/acpi/boot.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 803b684..4cd0761 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -460,8 +460,12 @@ acpi_parse_ioapic(struct acpi_subtable_header * header, const unsigned long end)
+ 
+ 	acpi_table_print_madt_entry(header);
+ 
+-	/* Statically assign IRQ numbers for IOAPICs hosting legacy IRQs */
+-	if (ioapic->global_irq_base < nr_legacy_irqs())
++	/*
++	 * Statically assign IRQ numbers for IOAPICs hosting legacy IRQs,
++	 * Or for the platform in Hardware-reduced ACPI model
++	 */
++	if (ioapic->global_irq_base < nr_legacy_irqs() ||
++		acpi_gbl_reduced_hardware)
+ 		cfg.type = IOAPIC_DOMAIN_LEGACY;
+ 
+ 	mp_register_ioapic(ioapic->id, ioapic->address, ioapic->global_irq_base,
+-- 
+1.9.1
