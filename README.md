@@ -112,7 +112,8 @@ Rufus: http://rufus.akeo.ie
 
 1. To disable Secure Boot press F2 when the laptop is starting. You should get a BIOS-alike configuration application where Secure Boot may be disabled (Security tab).
 
-    NOTE: that on Flex 10 you have to press Fn + F2 to get the F2 functionality, not some desktop config button. 
+    NOTE: that on Flex 10 you have to press "Fn + F2" to get the "F2" functionality, not some desktop config button. 
+    NOTE: Press "PowerOn + Volume Down" five seconds for boot menu.
 
 2. You have to go to pc settings via the charms bar ( bar on the right that pops up on desktop ) then General -> advanced startup-> restart. it will boot up into a blue screen with some options, select troubleshoot, then there should be a bios or uefi restart option, wording differs slightly based on hardware.
 
