@@ -40,7 +40,7 @@ Boot, Kernel and ALSA documentation can be useful for:
 
  * Boot Standard Kernel **{OK}**
  * Detect hard drives **{OK}**
- * Shutdown **/!\**
+ * Shutdown **{OK}**
  * Reboot **{OK}**
  * Hibernation **/!\**
  * Sleep / Suspend **/!\**
@@ -50,7 +50,7 @@ Boot, Kernel and ALSA documentation can be useful for:
    - Resize-and-Rotate(randr) **{i}**
  * Screen backlight **{i}**
  * Light sensor **/!\**
- * Switch to External Screen (HDMI) **[?]**
+ * Switch to External Screen (HDMI)  **{OK}**
  * Mouse
    - Built-in (Touchpad) **{OK}**
    - Built-in (Touchscreen) **{i}**
@@ -58,7 +58,7 @@ Boot, Kernel and ALSA documentation can be useful for:
  * Wireless/Wifi **{OK}**
  * Keyboard's Hotkeys **[?]**
  * Sound **{i}**
- * MicroSD card reader **[?]**
+ * MicroSD card reader **{OK}**
  * Built-in camera **{X}**
  * Accelerometers **{X}**
 
@@ -103,8 +103,6 @@ Rufus: http://rufus.akeo.ie
 
 
 {i} The following information and procedures are mostly extracted from the T100TA model and adappted to the Flexx10. The T100TA has an hardware similar to that one of the Flexx10, informations and procedures regarding these two models can be usefully shared.
-
-/!\ /!\ /!\ There is a grave issue in linux kernel > 4.3 (now available only in Debian Jessie) with CPU C-states which causes instability during mmc data operations, leading possibly to data loss and file system corruption. In linux kernel 4.2 the problem still persists and a workaround is proposed in the Power Management section, make sure to apply it also during the installation.
 
 {i} Before installing Debian, Secure Boot needs to be disabled. Also, if dual-booting with Windows 8 it is recommended to disable its fast boot feature.
 
@@ -264,37 +262,9 @@ scripts/install_rtl8723bs_debian.sh
 NOTE: Wifi and a network conection are required to continue!
 
 
-## Kernel (GIT)
+## Kernel 
+wip check issues/7
 
-The best option is to upgrade the kernel to the latest review published in github.
-
-You can use this script to download all required dependencies, sources and patches:
-
-scripts/kernel_git.sh
-
-Once you have downloaded the kernel copy the configuration file from: 
-
-```
-cp kernel/config-4.4.0-rc8+ /your/kernel/source/.config
-cd source
-make menuconfig
-make -j 4 deb-pkg
-```
-
-Be patient this task takes about 3 or 4 hours, when it's finished you will get the debian package files:
-
-```
-../linux-firmware-image-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb
-../linux-headers-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb
-../linux-image-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb
-../linux-image-4.4.0-rc8+-dbg_4.4.0-rc8+-1_amd64.deb
-../linux-libc-dev_4.4.0-rc8+-1_amd64.deb
-```
-
-Install all packages except "dbg":
-
-```
-dpkg -i linux-firmware-image-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb linux-headers-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb linux-image-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb linux-libc-dev_4.4.0-rc8+-1_amd64.deb
 ```
 
 NOTE: REBUILD WIFI MODULE!
@@ -383,15 +353,6 @@ $  xrandr --output DSI1 --brightness 0.8
 
 The script brightness_ctl.Stretch_flexx10.sh makes use of the command above to progressively reduce the screen brightness.
 
-
-## CPU C-states issue with the internal eMMC
-
-This issue causes instability during mmc data operations, leading possibly to data loss and file system corruption, and it is discussed in this thread and a patch seems to be already proposed in this discussion. However a proper fix doesn't seem to be available yet. As a workaround it is necessary to boot the system with the kernel parameter:
-
-```
-intel_idle.max_cstate=0 intel_pstates=disabled
-```
-
 Check this post for further suggestions and instruction. Please be aware that using this workaround can impact on the battery duration, but it is better than lose data.
 
 ## Touchscreen
@@ -422,48 +383,7 @@ $ xinput
 
 The device is an Intel SST Audio / Realtek RT5640. The firmware can be installed with:
 
-```
-# apt-get install firmware-intel-sound
-```
-  
-However a manual configuration of the device is still required. It is possible to do it using alsactl (available in the package alsa-utils) and a proper configuration file. The T100 Ubuntu community on G+ has many configuration files you can try but this one seems to work well. Download and apply the configuration file in this way:
-
-```
-# cp asound.state /var/lib/alsa/
-# alsactl restore
-# sh set-alsa-bytcr-rt5640.sh
-```
-
-This will enable your sound card, at this moment I only got some crakles at bootand login time.
-
-```
-[  994.246832]  Baytrail Audio Port: sst: error code = -22
-[  994.246840] bytcr_rt5640 bytcr_rt5640: BUG: , pos = -22, buffer size = 203830, period size = 1199
-[  994.246863]  Baytrail Audio Port: sst: error code = -22
-[  994.246870] bytcr_rt5640 bytcr_rt5640: BUG: , pos = -22, buffer size = 203830, period size = 1199
-
-```
-
-All these firmware errors will increase your kernel boot time.
-
-Please be aware that there are reports indicating that in some cases the sound can be distorted and the speakers can be even damaged if the volume is high. Be careful in doing tests. Headphones work too but switching from the speaker is not automatic, it can be done using the audio manager of the DE or a dedicated application like pavucontrol.
-
-For the linux kernel 3.16 in Debian Jessie use the firmware and the alsa configuration files available here. However, as suggested in the important notes above, it is not advisable to use this kernel due to a lot of components unsupported.
-
-
-## microSD Card Reader
-
-The following action allows the card reader to work:
-
-```
-# echo 'options sdhci debug_quirks=0x8000' | tee /etc/modprobe.d/sdhci.conf > /dev/null
-# update-initramfs -u -k all
-```
-
-After a reboot the card reader should be working.
-
-To use the microSD card reader for the installation procedure, or at the first boot of the system, at boot edit the GRUB menu entry and add to the linux line the option sdhci.debug_quirks=0x8000.
-
+Wip check issues/7
 
 ## Built-in camera
 
