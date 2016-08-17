@@ -259,7 +259,7 @@ start network-manager
 
 If you need to build wifi again you can use:
 
-scripts/install_rtl8723bs_debian.sh
+kernel/install_rtl8723bs_debian.sh
 
 NOTE: Wifi and a network conection are required to continue!
 
@@ -270,12 +270,12 @@ The best option is to upgrade the kernel to the latest review published in githu
 
 You can use this script to download all required dependencies, sources and patches:
 
-scripts/kernel_git.sh
+kernel/kernel_git.sh
 
 Once you have downloaded the kernel copy the configuration file from: 
 
 ```
-cp kernel/config-4.4.0-rc8+ /your/kernel/source/.config
+cp kernel/config-4.8.0-rc2+ /your/kernel/source/.config
 cd source
 make menuconfig
 make -j 4 deb-pkg
