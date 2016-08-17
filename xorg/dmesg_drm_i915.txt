@@ -1,0 +1,138 @@
+[    0.000000] Command line: BOOT_IMAGE=/boot/vmlinuz-4.8.0-rc2-flexx10-2+ root=UUID=36591e78-0af5-4776-b60a-8f93a5cc9230 ro video=intelfb fbcon=rotate:1 quiet splash intel_idle.max_cstate=0 intel_pstate=disabled vt.handoff=7
+[    0.000000] efi:  ACPI 2.0=0x7ccf5014  ESRT=0x7bc37010  SMBIOS=0x7bcfb000 
+[    0.000000] Kernel command line: BOOT_IMAGE=/boot/vmlinuz-4.8.0-rc2-flexx10-2+ root=UUID=36591e78-0af5-4776-b60a-8f93a5cc9230 ro video=intelfb fbcon=rotate:1 quiet splash intel_idle.max_cstate=0 intel_pstate=disabled vt.handoff=7
+[    0.750490] ACPI: SSDT 0xFFFF880078FB3800 00015F (v01 PmRef  ApIst    00003000 INTL 20130117)
+[    3.991520] simple-framebuffer simple-framebuffer.0: fb0: simplefb registered!
+[    5.990394] [drm] Initialized drm 1.1.0 20060810
+[    6.575223] [drm:intel_device_info_dump] i915 device info: gen=7, pciid=0x0f31 rev=0x0f flags=is_mobile,need_gfx_hws,is_valleyview,has_hotplug,
+[    6.575491] [drm:intel_device_info_runtime_init] slice total: 0
+[    6.575506] [drm:intel_device_info_runtime_init] subslice total: 0
+[    6.575518] [drm:intel_device_info_runtime_init] subslice per slice: 0
+[    6.575524] [drm:intel_device_info_runtime_init] EU total: 0
+[    6.575529] [drm:intel_device_info_runtime_init] EU per subslice: 0
+[    6.575535] [drm:intel_device_info_runtime_init] has slice power gating: n
+[    6.575540] [drm:intel_device_info_runtime_init] has subslice power gating: n
+[    6.575545] [drm:intel_device_info_runtime_init] has EU power gating: n
+[    6.575553] [drm:intel_sanitize_options] ppgtt mode: 1
+[    6.575663] [drm] Memory usable by graphics device = 2048M
+[    6.575672] [drm:i915_ggtt_init_hw] GMADR size = 256M
+[    6.575678] [drm:i915_ggtt_init_hw] GTT stolen size = 32M
+[    6.575694] fb: switching to inteldrmfb from simple
+[    6.576360] [drm] Replacing VGA console driver
+[    6.576549] [drm:intel_opregion_setup] graphic opregion physical addr: 0x7cc5d010
+[    6.576604] [drm:intel_opregion_setup] Public ACPI methods supported
+[    6.576610] [drm:intel_opregion_setup] ASLE supported
+[    6.576801] [drm] Supports vblank timestamp caching Rev 2 (21.10.2013).
+[    6.576815] [drm] Driver supports precise vblank timestamp query.
+[    6.576847] [drm:parse_mipi_config] Found MIPI Config block, panel index = 0
+[    6.576857] [drm:parse_mipi_sequence] Found MIPI sequence block v2
+[    6.576878] [drm:parse_mipi_sequence] MIPI related VBT parsing complete
+[    6.576955] [drm:intel_update_rawclk] rawclk rate: 200000 kHz
+[    6.580578] [drm:intel_update_czclk] CZ clock rate: 333333 kHz
+[    6.580593] [drm:intel_update_cdclk] Current CD clock rate: 333333 kHz
+[    6.580602] [drm:intel_update_max_cdclk] Max CD clock rate: 400000 kHz
+[    6.580607] [drm:intel_update_max_cdclk] Max dotclock rate: 360000 kHz
+[    6.581035] [drm] parse error at position 6 in video mode 'intelfb'
+[    6.581190] [drm] parse error at position 6 in video mode 'intelfb'
+[    6.581270] [drm] parse error at position 6 in video mode 'intelfb'
+[    6.581341] [drm] parse error at position 6 in video mode 'intelfb'
+[    6.581412] [drm] parse error at position 6 in video mode 'intelfb'
+[    6.581664] [drm:pwm_setup_backlight [i915]] *ERROR* Failed to own the pwm chip
+[    6.599319] [drm:i915_pages_create_for_stolen] offset=0x0, size=4096000
+[    6.608088] [drm:gen6_ppgtt_init] Allocated pde space (2M) at GTT entry: 7fdf0
+[    6.614000] [drm:i915_gem_context_init] HW context support initialized
+[    6.614234] [drm:i915_pages_create_for_stolen] offset=0x3e8000, size=131072
+[    6.614291] [drm:init_status_page] render ring hws offset: 0x003e9000
+[    6.614349] [drm:i915_pages_create_for_stolen] offset=0x408000, size=4096
+[    6.614368] [drm:intel_init_pipe_control] render ring pipe control offset: 0x7fffe000
+[    6.614701] [drm:i915_pages_create_for_stolen] offset=0x409000, size=131072
+[    6.614761] [drm:init_status_page] bsd ring hws offset: 0x0040c000
+[    6.614942] [drm:i915_pages_create_for_stolen] offset=0x429000, size=131072
+[    6.615081] [drm:init_status_page] blitter ring hws offset: 0x0042f000
+[    6.615264] [drm:intel_guc_setup] GuC fw status: path (null), fetch NONE, load NONE
+[    6.615293] [drm:i915_pages_create_for_stolen] offset=0x1efa000, size=24576
+[    6.615304] [drm:valleyview_setup_pctx] PCBR: 0x7edfa001
+[    6.615319] [drm:vlv_init_gpll_ref_freq] GPLL reference freq: 20833 kHz
+[    6.615331] [drm:valleyview_init_gt_powersave] DDR speed: 1333 MHz
+[    6.615343] [drm:valleyview_init_gt_powersave] max GPU freq: 646 MHz (214)
+[    6.615358] [drm:valleyview_init_gt_powersave] RPe GPU freq: 646 MHz (214)
+[    6.615369] [drm:valleyview_init_gt_powersave] RP1(Guar Freq) GPU freq: 312 MHz (198)
+[    6.615380] [drm:valleyview_init_gt_powersave] min GPU freq: 187 MHz (192)
+[    6.615392] [drm:intel_update_cdclk] Current CD clock rate: 333333 kHz
+[    7.435684] fbcon: inteldrmfb (fb0) is primary device
+[    7.919095] [drm:intel_print_rc6_info] Enabling RC6 states: RC6 on
+[    7.919116] [drm:valleyview_enable_rps] GPLL enabled? yes
+[    7.919123] [drm:valleyview_enable_rps] GPU status: 0x0000c6d0
+[    7.919130] [drm:valleyview_enable_rps] current GPU freq: 312 MHz (198)
+[    7.919136] [drm:valleyview_enable_rps] setting GPU freq to 187 MHz (192)
+[    8.563092] [drm:intel_update_cdclk] Current CD clock rate: 266667 kHz
+[    9.563132] i915 0000:00:02.0: fb0: inteldrmfb frame buffer device
+[   10.408730] [drm:i915_gem_open] 
+[   15.763610] [drm:i915_gem_open] 
+[   15.763722] [drm:i915_gem_open] 
+[   15.763786] [drm:i915_gem_open] 
+[   15.763847] [drm:i915_gem_open] 
+[   16.847655] [drm:i915_gem_open] 
+[   16.954667] [drm:i915_gem_open] 
+[   16.961633] [drm:i915_gem_open] 
+[   18.222720] [drm:i915_gem_open] 
+[   18.824986] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[   18.830627] [drm:i915_gem_context_destroy_ioctl] HW context 1 destroyed
+[   18.832215] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[   28.295420] RTL8723BS: set pairwise key camid:4, addr:e4:c1:46:fb:b2:9f, kid:0, type:AES
+[   28.320983] RTL8723BS: set group key camid:5, addr:e4:c1:46:fb:b2:9f, kid:1, type:TKIP
+[   46.235388] [drm:i915_gem_open] 
+[   46.265873] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[   46.271978] [drm:i915_gem_context_destroy_ioctl] HW context 1 destroyed
+[   47.577575] [drm:i915_gem_open] 
+[   47.599471] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[   47.601443] [drm:i915_gem_context_destroy_ioctl] HW context 1 destroyed
+[   47.602888] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[   48.414291] [drm:intel_update_cdclk] Current CD clock rate: 200000 kHz
+[   48.430670] [drm:intel_update_cdclk] Current CD clock rate: 266667 kHz
+[   59.552935] [drm:i915_gem_open] 
+[   59.574858] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[   59.577235] [drm:i915_gem_context_destroy_ioctl] HW context 1 destroyed
+[   59.578729] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[  122.873227] [drm:i915_gem_open] 
+[  122.952493] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[  122.966117] [drm:i915_gem_context_create_ioctl] HW context 2 created
+[  222.017195] [drm:i915_gem_open] 
+[  222.072319] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[  222.074405] [drm:i915_gem_context_destroy_ioctl] HW context 1 destroyed
+[  222.075880] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[ 1399.531536] [drm:i915_gem_open] 
+[ 1399.598989] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[ 1399.605411] [drm:i915_gem_context_destroy_ioctl] HW context 1 destroyed
+[ 1399.607153] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[ 1428.606424] [drm:i915_gem_open] 
+[ 1428.634010] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[ 1428.638491] [drm:i915_gem_context_create_ioctl] HW context 2 created
+[ 1429.510531] [drm:i915_gem_context_destroy_ioctl] HW context 2 destroyed
+[ 1429.520008] [drm:i915_gem_context_destroy_ioctl] HW context 1 destroyed
+[ 1441.089965] [drm:i915_gem_open] 
+[ 1441.118072] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[ 1441.124041] [drm:i915_gem_context_create_ioctl] HW context 2 created
+[ 1456.788634] [drm:intel_pipe_update_end [i915]] *ERROR* Atomic update failure on pipe A (start=84318 end=84319) time 6 us, min 1272, max 1279, scanline start 1280, end 1280
+[ 1490.861034] [drm:i915_gem_open] 
+[ 1490.890376] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[ 1490.903003] [drm:i915_gem_context_destroy_ioctl] HW context 1 destroyed
+[ 1490.904624] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[ 1535.999814] [drm:i915_gem_context_destroy_ioctl] HW context 2 destroyed
+[ 1536.208303] [drm:i915_gem_context_destroy_ioctl] HW context 1 destroyed
+[ 4212.840169] [drm:i915_gem_open] 
+[ 4212.861685] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[ 4212.863453] [drm:i915_gem_context_destroy_ioctl] HW context 1 destroyed
+[ 4212.865048] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[ 4946.573677] [drm:i915_gem_context_destroy_ioctl] HW context 2 destroyed
+[ 4962.888440] [drm:i915_gem_context_create_ioctl] HW context 2 created
+[ 4992.191824] [drm:i915_gem_context_destroy_ioctl] HW context 2 destroyed
+[ 5081.910824] [drm:intel_pipe_update_end [i915]] *ERROR* Atomic update failure on pipe A (start=301435 end=301436) time 4 us, min 1272, max 1279, scanline start 1280, end 1280
+[ 5148.044245] [drm:i915_gem_open] 
+[ 5148.066111] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[ 5148.068229] [drm:i915_gem_context_destroy_ioctl] HW context 1 destroyed
+[ 5148.069895] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[ 8333.441275] [drm:i915_gem_open] 
+[ 8333.498521] [drm:i915_gem_context_create_ioctl] HW context 1 created
+[ 8333.500275] [drm:i915_gem_context_destroy_ioctl] HW context 1 destroyed
+[ 8333.501875] [drm:i915_gem_context_create_ioctl] HW context 1 created
