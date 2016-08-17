@@ -5,7 +5,7 @@ diff -uwr linux-4.8-rc1.orig/drivers/gpu/drm/i915/i915_params.c linux-4.8-rc1.ne
  	.inject_load_failure = 0,
  	.enable_dpcd_backlight = false,
  	.enable_gvt = false,
-+	.force_backlight_pmic = 1,	
++	.force_backlight_pmic = 1,
  };
  
  module_param_named(modeset, i915.modeset, int, 0400);
