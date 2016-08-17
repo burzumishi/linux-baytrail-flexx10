@@ -1,11 +1,13 @@
 # Introduction
 
-This project is an efford to get **Debian GNU/Linux** running on **[Nextbook Flexx 10.1"] (http://nextbookusa.com/productdetail.php?product_id=26)** Intel Atom Bay Trail device.
+This project is an efford to get **GNU/Linux** running on **[Nextbook Flexx 10.1"] (http://nextbookusa.com/productdetail.php?product_id=26)** Intel Atom Bay Trail device.
 
-It should work for **[Ubuntu] (http://www.ubuntu.com)** or any other **[Debian] (http://www.debian.org)** based distribution. Can be applied to any other GNU/Linux with some tweaking.
+This document has been tested on:
 
-**Arch Linux** support added (thanks to: @nicman23)
-
+- **[Debian] (http://www.debian.org)**
+- **[Ubuntu] (http://www.ubuntu.com)**
+- **[ElementaryOS] (https://elementary.io)**
+- **[Arch Linux] (https://www.archlinux.org)** (Thanks to: *@nicman23*)
 
 ## System Hardware Summary
 
