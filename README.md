@@ -292,7 +292,7 @@ Once you have downloaded the kernel copy the configuration file from:
 cp kernel/config-4.8.0-rc2+ /your/kernel/source/.config
 cd source
 make menuconfig
-make -j4 deb-pkg
+make INSTALL_MOD_STRIP=1 -j4 deb-pkg
 ```
 
 Be patient this task takes about 3 or 4 hours, when it's finished you will get the debian package files:
