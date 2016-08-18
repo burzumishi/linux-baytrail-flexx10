@@ -13,7 +13,8 @@ This document has been tested with the following "GNU/Linux" distributions:
 
 Boot, Kernel and ALSA documentation can be useful for:
 
-- **[Android-x86] (http://www.android-x86.org)** (Installed on USB stick ... it worked, but I have not written any doc yet ...)
+- **[Android-x86] (http://www.android-x86.org)**
+- **[This google groups discussion] (https://groups.google.com/forum/#!topic/android-x86/un74okmr30g)**
 
 
 ## System Hardware Summary
@@ -55,7 +56,7 @@ Boot, Kernel and ALSA documentation can be useful for:
    - Built-in (Touchpad) **{OK}**
    - Built-in (Touchscreen) **{i}**
  * Bluetooth {i} **{i}**
- * Wireless/Wifi **{OK}**
+ * Wireless/Wifi **{i}**
  * Keyboard's Hotkeys **[?]**
  * Sound **{i}**
  * MicroSD card reader **{OK}**
@@ -97,20 +98,23 @@ A BayTrail tablet.
 An USB storage medium to boot from.
 Optional: A storage medium (USB, SD-Card etc.) big enough to back up the Windows installation. I used a USB hard drive.
 Rufus: http://rufus.akeo.ie
+For linux, use dd or move everything to a properly labeled fat32 partition.
 ```
 
 ## Important Notes
 
 
-{i} The following information and procedures are mostly extracted from the T100TA model and adappted to the Flexx10. The T100TA has an hardware similar to that one of the Flexx10, informations and procedures regarding these two models can be usefully shared.
+{i} The following information and procedures are mostly extracted from the T100TA and Odys wintab 10.1 and adappted to the Flexx10. The T100TA has an hardware similar to that one of the Flexx10, informations and procedures regarding these two models can be usefully shared.
 
-{i} Before installing Debian, Secure Boot needs to be disabled. Also, if dual-booting with Windows 8 it is recommended to disable its fast boot feature.
+{i} Before installing Linux, Secure Boot needs to be disabled. Also, if dual-booting with Windows 8 it is recommended to disable its fast boot feature.
 
 {i} Although the Debian Jessie (stable) installer includes all the needed modules and core changes to install and boot on this machine, it is advisable to install Debian Stretch (testing) and keep it up to date due to a lot of components still unsupported. If you really want to install Debian Jessie (stable) at least you can use the backport repository to install the latest kernels and firmwares when available.
 
-{i} In order to install Debian using the internet (e.g. with a netinst image) the wifi has to be enabled. See the steps described in the WiFi section, prepare the needed firmware (see also the d-i manual Loading Missing Firmware) and reproduce the steps using a shell during the installation procedure.
+{i} Another choice is any close to upstream distro (the Arch family will be supported here).
 
-{i} The Flexx 10.1 is a mixed mode EFI system (i.e. a 64-bit CPU combined with a 32-bit EFI) without any legacy BIOS mode. By default, the Debian i386 installer images should boot on this machine via UEFI and let you install a complete 32-bit (i386) system. If you use the multi-arch amd64/i386 netinst or DVD image, you will also be able to install in 64-bit mode. You might expect slightly better performance that way, but the limited memory on the machine (2 GiB) maybe will become more of an issue. Multi-arch DVD images must be modified before booting.
+{i} In order to install with any netboot image, by using the internet (e.g. with a netinst image), the wifi has to be enabled. See the steps described in the WiFi section, prepare the needed firmware (see also the d-i manual Loading Missing Firmware) and reproduce the steps using a shell during the installation procedure.
+
+{i} The Flexx 10.1 is a mixed mode EFI system (i.e. a 64-bit CPU combined with a 32-bit EFI) without any legacy BIOS mode. By default, any i386 installer images should boot on this machine via UEFI and let you install a complete 32-bit (i386) system. If you use the multi-arch amd64/i386 netinst or DVD image, you will also be able to install in 64-bit mode. You might expect slightly better performance that way in exchange for ram uasge. Multi-arch DVD images must be modified before booting.
 
 
 ## BIOS Access
@@ -158,16 +162,13 @@ That will restart into the blue screen with options.
 8. You can now close the Power Options window if you like.
 ```
 
-### Create USB Media
+### Installing Debian
 
 Use Rufus with GPT Partition Table layout and formated with FAT32 to create a USB install disk. 
 
 Copy "grubia32.efi" in "D:\efi\grub\"
 
 NOTE: Do not overwrite "grubx64.efi" or "grub.efi"!
-
-
-### Booting Installation or Live Image
 
 Now, insert the USB stick and reboot to the firmware (BIOS). You can do this in Windows by holding shift when pressing “restart”, then touching Troubleshoot → Advanced Options → UEFI Firmware Settings → Restart.
 
@@ -177,19 +178,11 @@ Press F10 to save settings, and after a few seconds you will be in the GRUB boot
 
 Then press F10 to boot. You should get all the way to the Installation or Desktop.
 
-
-### Installing Linux
-
 The partitioning scheme you choose is up to you — but you will need to preserve the EFI partition, so don’t just partition the entire disk for Linux.
 
 In addition to the EFI partition, I prefer separate /, /home and /boot mount points; but that is up to you. You could squish down the Windows partition and created the additional partition(s), or just delete the Windows partition altogether if you don’t need it (not recommended).
 
-When done, reboot, leaving the USB stick in.
-
-
-### First boot
-
-Linux won’t boot yet ;(
+When done, you need to modify the grub configuration or Linux won’t boot yet ;(
 
 Boot back to the Grub welcome screen on the USB stick. Hit ‘c’ to drop to a Grub command line.
 
