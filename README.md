@@ -184,31 +184,17 @@ In addition to the EFI partition, I prefer separate /, /home and /boot mount poi
 
 When done, you need to modify the grub configuration or Linux won’t boot yet ;(
 
-Boot back to the Grub welcome screen on the USB stick. Hit ‘c’ to drop to a Grub command line.
+In a terminal run `lsblk -f`. This should get you an idea on how to proceed. Your install will be located in the mmcblk0 block device (most likely).
 
-You’ll need to provide Grub with the path to your kernel and initrd to boot. First, the path to the kernel:
+The usally mmcblk0p1  usally is the efi partition (fat32) that your grub installation is located and its size is no more than 512 (uefi limitation). Another partition that you will need to remember is the root of your linux installation. This is usually ext4 (or whatever you chose in the previous installation). If you removed windows mmcblk0p2 will probably be your ext4 root.
 
-linux (hd1,gpt5)/boot/vmlinuz-3.13-xxxx root=/dev/mmcblk0p5 quiet intel_pstates=disabled
+You’ll need to provide Grub with the path to your kernel and initrd to boot:
 
-Here, (hd1, gpt5) refers to the fifth partition on the third disk (Partition numbering begins at 1 and disk numbering begins at 0). This will vary depending on how yo uinstalled and your Flexx model. On my 32GB model, Grub assigns the USB stick as hd0, the read-only recovery flash chip as hd1, and the main internal flash as hd1. gpt5 is the fifth partition, but it will depend on how you installed.
+For the root of your installation run `blkid /dev/mmcblk0p2` for this example. This will print the UUID (and other information we do not need). Copy the UUID and in the /boot/efi/grub/grub.cfg search for the various menuentries. You will need to replace the uuid with the one you copied in the lines :
+- `search --no-floppy --fs-uuid --set=root foobar`
+- linux ... root="foobar" ...
 
-Fortunately, grub has good auto-completion features, so you can hit twice as you type, and grub will list possible completions for you — just keep trying until you see the various vmlinuz kernels.
-
-The root=/dev/mmcblk0p5 will also depend on the partition you installed to. It will be your root partition. Unfortunately this can’t be auto-completed, so if you can’t remember your partition setup, you’ll need to try by trial and error.
-
-To complete the line, press Enter.
-
-Then you need to specify the location of your initrd. This is easy, it’s in the same place as the kernel:
-
-initrd (hd1,gpt5)/boot/initrd-3.13-xxxx
-
-Then Enter.
-
-Then boot with: boot
-
-With luck after hitting Enter, you’ll boot through to Linux. If not, don’t be disheartened — keep trying, at this point your system is installed, review your settings.
-
-You can use "grub/grub_boot_commands.txt" as example.
+(Note: in the second line, you might have something like root=/dev/foobar. Replace that with root=UUID=youruuid)
 
 # System Configuration
 
