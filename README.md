@@ -244,7 +244,6 @@ NOTE: Wifi and a network conection are required to continue!
 ## Kernel 
 wip check issues/7
 
-```
 
 NOTE: REBUILD WIFI MODULE!
 
