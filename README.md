@@ -196,6 +196,24 @@ For the root of your installation run `blkid /dev/mmcblk0p2` for this example. T
 
 (Note: in the second line, you might have something like root=/dev/foobar. Replace that with root=UUID=youruuid)
 
+### Installing Arch based distros
+
+You will need another machine or have an external usb network card. Following is installation with another arch machine on a usb.
+
+Configure paritioning with an efi fat32 partition no more thatn 256M (just to be safe) and commit however much space you want for the root and format the root to f2fs for better 4k access/ latency.
+
+If you mount the usb installation's root in /mnt, mount the efi partition in /mnt/boot.
+
+Install arch-install-scripts do a standard pacstrap in the  with `pacstrap *where you mounted it* base base-devel git grub *somenetworkmanager*`
+
+Chroot into it `sudo arch-chroot /*where you mounted it*`. Edit `/etc/default/grub` to use UUIDs
+
+Install grub with `grub-install --target=i386-efi --no-nvram --efi-directory *where you mounted the efi dir* *path to usb efi block device*` and make a configuration for grub with `grub-mkconfig -o /boot/grub/grub.cfg`
+
+Do the usual stuff (locale-gen, set the time, ...) and install from the aur the rtl8723bs-dkms-git package for wifi.
+
+Note: as with any installation, grub may (or not) crap itself and not use the right UUIDs
+
 # System Configuration
 
 Once the system has booted sucessfully, it needs some tweaking:
