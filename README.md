@@ -1,6 +1,6 @@
 # Introduction
 
-This project is an efford to get **GNU/Linux** running on **[Nextbook Flexx 10.1"] (http://nextbookusa.com/productdetail.php?product_id=26)** Intel Atom Bay Trail device. 
+This project is an efford to get **GNU/Linux** running on **[Nextbook Flexx 10.1"] (http://nextbookusa.com/productdetail.php?product_id=26)** Intel Atom Bay Trail (ASoC) device. 
 
 NOTE: *Fleex 9 has almost the same hardware.*
 
