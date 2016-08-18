@@ -192,7 +192,7 @@ You’ll need to provide Grub with the path to your kernel and initrd to boot:
 
 For the root of your installation run `blkid /dev/mmcblk0p2` for this example. This will print the UUID (and other information we do not need). Copy the UUID and in the /boot/efi/grub/grub.cfg search for the various menuentries. You will need to replace the uuid with the one you copied in the lines :
 - `search --no-floppy --fs-uuid --set=root foobar`
-- linux ... root="foobar" ...
+- `linux ... root="foobar" ...`
 
 (Note: in the second line, you might have something like root=/dev/foobar. Replace that with root=UUID=youruuid)
 
