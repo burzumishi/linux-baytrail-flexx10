@@ -432,12 +432,14 @@ $ xinput
     ↳ SINO WEALTH USB KEYBOARD                	id=7	[slave  keyboard (3)]
 ```
 
-## Intel SST Audio
+## Intel SST Audio (RT5640)
 
-The device is an Intel SST Audio / Realtek RT5640. The firmware can be installed with:
+The device is an **Intel SST Audio / Realtek RT5640**. The firmware can be installed from "sound/firmware" directory:
 
 ```
 # apt-get install firmware-intel-sound
+# /lib/firmware/intel/fw_sst_0f28.bin /lib/firmware/intel/fw_sst_0f28.bin.orig
+# cp sound/firmware/fw_sst_0f28_ssp0.bin /lib/firmware/intel/fw_sst_0f28.bin
 ```
   
 However a manual configuration of the device is still required. It is possible to do it using alsactl (available in the package alsa-utils) and a proper configuration file. Download and apply the configuration file in this way:
