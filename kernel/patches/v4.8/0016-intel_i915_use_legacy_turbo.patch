@@ -1,0 +1,15 @@
+diff -uwr linux-4.8-rc1.orig/drivers/gpu/drm/i915/i915_irq.c linux-4.8-rc1.new/drivers/gpu/drm/i915/i915_irq.c
+--- linux-4.8-rc1.orig/drivers/gpu/drm/i915/i915_irq.c	2016-08-08 01:18:00.000000000 +0000
++++ linux-4.8-rc1.new/drivers/gpu/drm/i915/i915_irq.c	2016-08-09 04:48:13.852593094 +0000
+@@ -4517,11 +4517,6 @@
+ 	INIT_WORK(&dev_priv->rps.work, gen6_pm_rps_work);
+ 	INIT_WORK(&dev_priv->l3_parity.error_work, ivybridge_parity_work);
+ 
+-	/* Let's track the enabled rps events */
+-	if (IS_VALLEYVIEW(dev_priv))
+-		/* WaGsvRC0ResidencyMethod:vlv */
+-		dev_priv->pm_rps_events = GEN6_PM_RP_DOWN_EI_EXPIRED | GEN6_PM_RP_UP_EI_EXPIRED;
+-	else
+ 		dev_priv->pm_rps_events = GEN6_PM_RPS_EVENTS;
+ 
+ 	dev_priv->rps.pm_intr_keep = 0;

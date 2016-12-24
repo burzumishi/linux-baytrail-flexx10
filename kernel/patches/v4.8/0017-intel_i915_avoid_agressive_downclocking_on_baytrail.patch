@@ -1,0 +1,17 @@
+diff -uwr linux-4.8-rc1.orig/drivers/gpu/drm/i915/intel_pm.c linux-4.8-rc1.new/drivers/gpu/drm/i915/intel_pm.c
+--- linux-4.8-rc1.orig/drivers/gpu/drm/i915/intel_pm.c	2016-08-09 05:10:20.500918233 +0000
++++ linux-4.8-rc1.new/drivers/gpu/drm/i915/intel_pm.c	2016-08-09 05:20:40.514747418 +0000
+@@ -4736,6 +4736,13 @@
+ 		threshold_down = 70;
+ 	}
+ 
++	if (IS_VALLEYVIEW(dev_priv)) {
++		ei_up = 64000;
++		ei_down = 64000;
++		threshold_up = 90;
++		threshold_down = 70;
++	}
++
+ 	I915_WRITE(GEN6_RP_UP_EI,
+ 		   GT_INTERVAL_FROM_US(dev_priv, ei_up));
+ 	I915_WRITE(GEN6_RP_UP_THRESHOLD,

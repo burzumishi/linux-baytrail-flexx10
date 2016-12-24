@@ -1,0 +1,11 @@
+[Unit]
+Description=AXP288 Daemon
+
+[Service]
+ExecStart=/usr/sbin/axpd.sh
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,704 @@
+diff -uwr linux-4.8-rc1.orig/sound/soc/intel/atom/sst/sst_acpi.c linux-4.8-rc1.new/sound/soc/intel/atom/sst/sst_acpi.c
+--- linux-4.8-rc1.orig/sound/soc/intel/atom/sst/sst_acpi.c	2016-08-08 01:18:00.000000000 +0000
++++ linux-4.8-rc1.new/sound/soc/intel/atom/sst/sst_acpi.c	2016-08-08 20:34:22.272343862 +0000
+@@ -39,6 +39,8 @@
+ #include <acpi/platform/aclinux.h>
+ #include <acpi/actypes.h>
+ #include <acpi/acpi_bus.h>
++#include <asm/cpu_device_id.h>
++#include <asm/iosf_mbi.h>
+ #include "../sst-mfld-platform.h"
+ #include "../../common/sst-dsp.h"
+ #include "../../common/sst-acpi.h"
+@@ -113,6 +115,28 @@
+ 	.acpi_ipc_irq_index = 5,
+ };
+ 
++/* BYTCR has different BIOS from BYT */
++static const struct sst_res_info bytcr_res_info = {
++	.shim_offset = 0x140000,
++	.shim_size = 0x000100,
++	.shim_phy_addr = SST_BYT_SHIM_PHY_ADDR,
++	.ssp0_offset = 0xa0000,
++	.ssp0_size = 0x1000,
++	.dma0_offset = 0x98000,
++	.dma0_size = 0x4000,
++	.dma1_offset = 0x9c000,
++	.dma1_size = 0x4000,
++	.iram_offset = 0x0c0000,
++	.iram_size = 0x14000,
++	.dram_offset = 0x100000,
++	.dram_size = 0x28000,
++	.mbox_offset = 0x144000,
++	.mbox_size = 0x1000,
++	.acpi_lpe_res_index = 0,
++	.acpi_ddr_index = 2,
++	.acpi_ipc_irq_index = 0
++};
++
+ static struct sst_platform_info byt_rvp_platform_data = {
+ 	.probe_data = &byt_fwparse_info,
+ 	.ipc_info = &byt_ipc_info,
+@@ -215,6 +239,51 @@
+ 	return 0;
+ }
+ 
++
++static int is_byt_cr(struct device *dev, bool *bytcr)
++{
++	int status = 0;
++
++	if (IS_ENABLED(CONFIG_IOSF_MBI)) {
++		static const struct x86_cpu_id cpu_ids[] __initconst = {
++			{ X86_VENDOR_INTEL, 6, 55 }, /* Valleyview, Bay Trail */
++			{}
++		};
++		int status;
++		u32 bios_status;
++
++		if (!x86_match_cpu(cpu_ids) || !iosf_mbi_available()) {
++			/* bail silently */
++			return status;
++		}
++
++		/* FIXME:
++		 *  clean identifiers when Andy Shevchenko's patches
++		 *  are upstream
++		 */
++		status = iosf_mbi_read(BT_MBI_UNIT_PMC, /* 0x04 PUNIT */
++				       MBI_REG_READ, /* 0x10 */
++				       0x006, /* BIOS_CONFIG */
++				       &bios_status);
++
++		if (status) {
++			dev_err(dev, "could not read PUNIT BIOS_CONFIG\n");
++		} else {
++			/* bits 26:27 mirror PMIC options */
++			bios_status = (bios_status >> 26) & 3;
++
++			if ((bios_status == 1) || (bios_status == 3))
++				*bytcr = true;
++			else
++				dev_info(dev, "BYT-CR not detected\n");
++		}
++	} else {
++		dev_info(dev, "IOSF_MBI not enabled, no BYT-CR detection\n");
++	}
++	return status;
++}
++
++
+ static int sst_acpi_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+@@ -226,6 +295,7 @@
+ 	struct platform_device *plat_dev;
+ 	struct sst_platform_info *pdata;
+ 	unsigned int dev_id;
++	bool bytcr = false;
+ 
+ 	id = acpi_match_device(dev->driver->acpi_match_table, dev);
+ 	if (!id)
+@@ -251,6 +321,21 @@
+ 
+ 	dev_dbg(dev, "ACPI device id: %x\n", dev_id);
+ 
++	ret = sst_alloc_drv_context(&ctx, dev, dev_id);
++	if (ret < 0)
++		return ret;
++
++	snprintf(ctx->firmware_name, sizeof(ctx->firmware_name),
++		"%s%s", mach->fw_filename, ".bin");
++
++	ret = is_byt_cr(dev, &bytcr);
++	if (!((ret < 0) || (bytcr == false))) {
++		dev_info(dev, "Detected Baytrail-CR platform\n");
++
++		/* override resource info */
++		byt_rvp_platform_data.res_info = &bytcr_res_info;
++	}
++
+ 	plat_dev = platform_device_register_data(dev, pdata->platform, -1,
+ 						NULL, 0);
+ 	if (IS_ERR(plat_dev)) {
+@@ -271,13 +356,8 @@
+ 		return PTR_ERR(mdev);
+ 	}
+ 
+-	ret = sst_alloc_drv_context(&ctx, dev, dev_id);
+-	if (ret < 0)
+-		return ret;
+-
+ 	/* Fill sst platform data */
+ 	ctx->pdata = pdata;
+-	strcpy(ctx->firmware_name, mach->fw_filename);
+ 
+ 	ret = sst_platform_get_resources(ctx);
+ 	if (ret)
+@@ -363,29 +443,29 @@
+ }
+ 
+ static struct sst_acpi_mach sst_acpi_bytcr[] = {
+-	{"10EC5640", "bytcr_rt5640", "intel/fw_sst_0f28.bin", "bytcr_rt5640", NULL,
++	{"10EC5640", "bytcr_rt5640", "intel/fw_sst_0f28", "bytcr_rt5640", NULL,
+ 						&byt_rvp_platform_data },
+-	{"10EC5642", "bytcr_rt5640", "intel/fw_sst_0f28.bin", "bytcr_rt5640", NULL,
++	{"10EC5642", "bytcr_rt5640", "intel/fw_sst_0f28", "bytcr_rt5640", NULL,
+ 						&byt_rvp_platform_data },
+-	{"INTCCFFD", "bytcr_rt5640", "intel/fw_sst_0f28.bin", "bytcr_rt5640", NULL,
++	{"INTCCFFD", "bytcr_rt5640", "intel/fw_sst_0f28", "bytcr_rt5640", NULL,
+ 						&byt_rvp_platform_data },
+-	{"10EC5651", "bytcr_rt5651", "intel/fw_sst_0f28.bin", "bytcr_rt5651", NULL,
++	{"10EC5651", "bytcr_rt5651", "intel/fw_sst_0f28", "bytcr_rt5651", NULL,
+ 						&byt_rvp_platform_data },
+ 	{},
+ };
+ 
+ /* Cherryview-based platforms: CherryTrail and Braswell */
+ static struct sst_acpi_mach sst_acpi_chv[] = {
+-	{"10EC5670", "cht-bsw-rt5672", "intel/fw_sst_22a8.bin", "cht-bsw", NULL,
++	{"10EC5670", "cht-bsw-rt5672", "intel/fw_sst_22a8", "cht-bsw", NULL,
+ 						&chv_platform_data },
+-	{"10EC5645", "cht-bsw-rt5645", "intel/fw_sst_22a8.bin", "cht-bsw", NULL,
++	{"10EC5645", "cht-bsw-rt5645", "intel/fw_sst_22a8", "cht-bsw", NULL,
+ 						&chv_platform_data },
+-	{"10EC5650", "cht-bsw-rt5645", "intel/fw_sst_22a8.bin", "cht-bsw", NULL,
++	{"10EC5650", "cht-bsw-rt5645", "intel/fw_sst_22a8", "cht-bsw", NULL,
+ 						&chv_platform_data },
+-	{"193C9890", "cht-bsw-max98090", "intel/fw_sst_22a8.bin", "cht-bsw", NULL,
++	{"193C9890", "cht-bsw-max98090", "intel/fw_sst_22a8", "cht-bsw", NULL,
+ 						&chv_platform_data },
+ 	/* some CHT-T platforms rely on RT5640, use Baytrail machine driver */
+-	{"10EC5640", "bytcr_rt5640", "intel/fw_sst_22a8.bin", "bytcr_rt5640", cht_quirk,
++	{"10EC5640", "bytcr_rt5640", "intel/fw_sst_22a8", "bytcr_rt5640", cht_quirk,
+ 						&chv_platform_data },
+ 
+ 	{},
+diff -uwr linux-4.8-rc1.orig/sound/soc/intel/atom/sst-atom-controls.c linux-4.8-rc1.new/sound/soc/intel/atom/sst-atom-controls.c
+--- linux-4.8-rc1.orig/sound/soc/intel/atom/sst-atom-controls.c	2016-08-08 01:18:00.000000000 +0000
++++ linux-4.8-rc1.new/sound/soc/intel/atom/sst-atom-controls.c	2016-08-08 20:33:24.648344006 +0000
+@@ -534,6 +534,7 @@
+ 
+ /* Look up table to convert MIXER SW bit regs to SWM inputs */
+ static const uint swm_mixer_input_ids[SST_SWM_INPUT_COUNT] = {
++	[SST_IP_MODEM]		= SST_SWM_IN_MODEM,
+ 	[SST_IP_CODEC0]		= SST_SWM_IN_CODEC0,
+ 	[SST_IP_CODEC1]		= SST_SWM_IN_CODEC1,
+ 	[SST_IP_LOOP0]		= SST_SWM_IN_SPROT_LOOP,
+@@ -674,6 +675,7 @@
+ /* SBA mixers - 16 inputs */
+ #define SST_SBA_DECLARE_MIX_CONTROLS(kctl_name)							\
+ 	static const struct snd_kcontrol_new kctl_name[] = {					\
++		SOC_DAPM_SINGLE("modem_in Switch", SND_SOC_NOPM, SST_IP_MODEM, 1, 0),		\
+ 		SOC_DAPM_SINGLE("codec_in0 Switch", SND_SOC_NOPM, SST_IP_CODEC0, 1, 0),		\
+ 		SOC_DAPM_SINGLE("codec_in1 Switch", SND_SOC_NOPM, SST_IP_CODEC1, 1, 0),		\
+ 		SOC_DAPM_SINGLE("sprot_loop_in Switch", SND_SOC_NOPM, SST_IP_LOOP0, 1, 0),	\
+@@ -684,6 +686,7 @@
+ 	}
+ 
+ #define SST_SBA_MIXER_GRAPH_MAP(mix_name)			\
++	{ mix_name, "modem_in Switch",	"modem_in" },		\
+ 	{ mix_name, "codec_in0 Switch",	"codec_in0" },		\
+ 	{ mix_name, "codec_in1 Switch",	"codec_in1" },		\
+ 	{ mix_name, "sprot_loop_in Switch",	"sprot_loop_in" },	\
+@@ -713,6 +716,7 @@
+ SST_SBA_DECLARE_MIX_CONTROLS(sst_mix_voip_controls);
+ SST_SBA_DECLARE_MIX_CONTROLS(sst_mix_codec0_controls);
+ SST_SBA_DECLARE_MIX_CONTROLS(sst_mix_codec1_controls);
++SST_SBA_DECLARE_MIX_CONTROLS(sst_mix_modem_controls);
+ 
+ /*
+  * sst_handle_vb_timer - Start/Stop the DSP scheduler
+@@ -931,17 +935,26 @@
+ int send_ssp_cmd(struct snd_soc_dai *dai, const char *id, bool enable)
+ {
+ 	struct sst_data *drv = snd_soc_dai_get_drvdata(dai);
+-	const struct sst_ssp_config *config;
++	int ssp_id;
+ 
+ 	dev_info(dai->dev, "Enter: enable=%d port_name=%s\n", enable, id);
+ 
++	if (strcmp(id, "ssp0-port") == 0)
++		ssp_id = SSP_MODEM;
++	else if (strcmp(id, "ssp2-port") == 0)
++		ssp_id = SSP_CODEC;
++	else {
++		dev_dbg(dai->dev, "port %s is not supported\n", id);
++		return -1;
++	}
++
+ 	SST_FILL_DEFAULT_DESTINATION(drv->ssp_cmd.header.dst);
+ 	drv->ssp_cmd.header.command_id = SBA_HW_SET_SSP;
+ 	drv->ssp_cmd.header.length = sizeof(struct sst_cmd_sba_hw_set_ssp)
+ 				- sizeof(struct sst_dsp_header);
+ 
+-	config = &sst_ssp_configs;
+-	dev_dbg(dai->dev, "ssp_id: %u\n", config->ssp_id);
++	drv->ssp_cmd.selection = ssp_id;
++	dev_dbg(dai->dev, "ssp_id: %u\n", ssp_id);
+ 
+ 	if (enable)
+ 		drv->ssp_cmd.switch_state = SST_SWITCH_ON;
+@@ -1047,8 +1060,10 @@
+ }
+ 
+ static const struct snd_soc_dapm_widget sst_dapm_widgets[] = {
++	SST_AIF_IN("modem_in", sst_set_be_modules),
+ 	SST_AIF_IN("codec_in0", sst_set_be_modules),
+ 	SST_AIF_IN("codec_in1", sst_set_be_modules),
++	SST_AIF_OUT("modem_out", sst_set_be_modules),
+ 	SST_AIF_OUT("codec_out0", sst_set_be_modules),
+ 	SST_AIF_OUT("codec_out1", sst_set_be_modules),
+ 
+@@ -1103,6 +1118,9 @@
+ 		      sst_mix_codec0_controls, sst_swm_mixer_event),
+ 	SST_SWM_MIXER("codec_out1 mix 0", SND_SOC_NOPM, SST_TASK_SBA, SST_SWM_OUT_CODEC1,
+ 		      sst_mix_codec1_controls, sst_swm_mixer_event),
++	SST_SWM_MIXER("modem_out mix 0", SND_SOC_NOPM, SST_TASK_SBA, SST_SWM_OUT_MODEM,
++		      sst_mix_modem_controls, sst_swm_mixer_event),
++
+ };
+ 
+ static const struct snd_soc_dapm_route intercon[] = {
+@@ -1148,6 +1166,9 @@
+ 	SST_SBA_MIXER_GRAPH_MAP("codec_out0 mix 0"),
+ 	{"codec_out1", NULL, "codec_out1 mix 0"},
+ 	SST_SBA_MIXER_GRAPH_MAP("codec_out1 mix 0"),
++	{"modem_out", NULL, "modem_out mix 0"},
++	SST_SBA_MIXER_GRAPH_MAP("modem_out mix 0"),
++
+ 
+ };
+ static const char * const slot_names[] = {
+@@ -1217,6 +1238,9 @@
+ 	SST_GAIN("media_loop2_out", SST_PATH_INDEX_MEDIA_LOOP2_OUT, SST_TASK_SBA, 0, &sst_gains[13]),
+ 	SST_GAIN("sprot_loop_out", SST_PATH_INDEX_SPROT_LOOP_OUT, SST_TASK_SBA, 0, &sst_gains[14]),
+ 	SST_VOLUME("media0_in", SST_PATH_INDEX_MEDIA0_IN, SST_TASK_MMX, 0, &sst_gains[15]),
++	SST_GAIN("modem_in", SST_PATH_INDEX_MODEM_IN, SST_TASK_SBA, 0, &sst_gains[16]),
++	SST_GAIN("modem_out", SST_PATH_INDEX_MODEM_OUT, SST_TASK_SBA, 0, &sst_gains[17]),
++
+ };
+ 
+ #define SST_GAIN_NUM_CONTROLS 3
+diff -uwr linux-4.8-rc1.orig/sound/soc/intel/atom/sst-atom-controls.h linux-4.8-rc1.new/sound/soc/intel/atom/sst-atom-controls.h
+--- linux-4.8-rc1.orig/sound/soc/intel/atom/sst-atom-controls.h	2016-08-08 01:18:00.000000000 +0000
++++ linux-4.8-rc1.new/sound/soc/intel/atom/sst-atom-controls.h	2016-08-08 20:33:24.648344006 +0000
+@@ -35,6 +35,8 @@
+ /* define a bit for each mixer input */
+ #define SST_MIX_IP(x)		(x)
+ 
++#define SST_IP_MODEM		SST_MIX_IP(0)
++#define SST_IP_BT		SST_MIX_IP(1)
+ #define SST_IP_CODEC0		SST_MIX_IP(2)
+ #define SST_IP_CODEC1		SST_MIX_IP(3)
+ #define SST_IP_LOOP0		SST_MIX_IP(4)
+@@ -63,6 +65,7 @@
+  * Audio DSP Path Ids. Specified by the audio DSP FW
+  */
+ enum sst_path_index {
++	SST_PATH_INDEX_MODEM_OUT                = (0x00 << SST_PATH_ID_SHIFT),
+ 	SST_PATH_INDEX_CODEC_OUT0               = (0x02 << SST_PATH_ID_SHIFT),
+ 	SST_PATH_INDEX_CODEC_OUT1               = (0x03 << SST_PATH_ID_SHIFT),
+ 
+@@ -80,6 +83,7 @@
+ 
+ 
+ 	/* Start of input paths */
++	SST_PATH_INDEX_MODEM_IN                 = (0x80 << SST_PATH_ID_SHIFT),
+ 	SST_PATH_INDEX_CODEC_IN0                = (0x82 << SST_PATH_ID_SHIFT),
+ 	SST_PATH_INDEX_CODEC_IN1                = (0x83 << SST_PATH_ID_SHIFT),
+ 
+@@ -105,6 +109,7 @@
+  * path IDs
+  */
+ enum sst_swm_inputs {
++	SST_SWM_IN_MODEM	= (SST_PATH_INDEX_MODEM_IN	  | SST_DEFAULT_CELL_NBR),
+ 	SST_SWM_IN_CODEC0	= (SST_PATH_INDEX_CODEC_IN0	  | SST_DEFAULT_CELL_NBR),
+ 	SST_SWM_IN_CODEC1	= (SST_PATH_INDEX_CODEC_IN1	  | SST_DEFAULT_CELL_NBR),
+ 	SST_SWM_IN_SPROT_LOOP	= (SST_PATH_INDEX_SPROT_LOOP_IN	  | SST_DEFAULT_CELL_NBR),
+@@ -124,6 +129,7 @@
+  * path IDs
+  */
+ enum sst_swm_outputs {
++	SST_SWM_OUT_MODEM	= (SST_PATH_INDEX_MODEM_OUT	  | SST_DEFAULT_CELL_NBR),
+ 	SST_SWM_OUT_CODEC0	= (SST_PATH_INDEX_CODEC_OUT0	  | SST_DEFAULT_CELL_NBR),
+ 	SST_SWM_OUT_CODEC1	= (SST_PATH_INDEX_CODEC_OUT1	  | SST_DEFAULT_CELL_NBR),
+ 	SST_SWM_OUT_SPROT_LOOP	= (SST_PATH_INDEX_SPROT_LOOP_OUT  | SST_DEFAULT_CELL_NBR),
+diff -uwr linux-4.8-rc1.orig/sound/soc/intel/boards/bytcr_rt5640.c linux-4.8-rc1.new/sound/soc/intel/boards/bytcr_rt5640.c
+--- linux-4.8-rc1.orig/sound/soc/intel/boards/bytcr_rt5640.c	2016-08-08 01:18:00.000000000 +0000
++++ linux-4.8-rc1.new/sound/soc/intel/boards/bytcr_rt5640.c	2016-08-08 20:39:16.964343127 +0000
+@@ -24,6 +24,8 @@
+ #include <linux/device.h>
+ #include <linux/dmi.h>
+ #include <linux/slab.h>
++#include <asm/cpu_device_id.h>
++#include <asm/platform_sst_audio.h>
+ #include <sound/pcm.h>
+ #include <sound/pcm_params.h>
+ #include <sound/soc.h>
+@@ -31,6 +33,7 @@
+ #include "../../codecs/rt5640.h"
+ #include "../atom/sst-atom-controls.h"
+ #include "../common/sst-acpi.h"
++#include "../common/sst-dsp.h"
+ 
+ enum {
+ 	BYT_RT5640_DMIC1_MAP,
+@@ -40,6 +43,11 @@
+ 
+ #define BYT_RT5640_MAP(quirk)	((quirk) & 0xff)
+ #define BYT_RT5640_DMIC_EN	BIT(16)
++#define BYT_RT5640_MONO_SPEAKER BIT(17)
++#define BYT_RT5640_DIFF_MIC     BIT(18) /* defaut is single-ended */
++#define BYT_RT5640_SSP2_AIF2     BIT(19) /* default is using AIF1  */
++#define BYT_RT5640_SSP0_AIF1     BIT(20)
++#define BYT_RT5640_SSP0_AIF2     BIT(21)
+ 
+ static unsigned long byt_rt5640_quirk = BYT_RT5640_DMIC1_MAP |
+ 					BYT_RT5640_DMIC_EN;
+@@ -52,21 +60,10 @@
+ };
+ 
+ static const struct snd_soc_dapm_route byt_rt5640_audio_map[] = {
+-	{"AIF1 Playback", NULL, "ssp2 Tx"},
+-	{"ssp2 Tx", NULL, "codec_out0"},
+-	{"ssp2 Tx", NULL, "codec_out1"},
+-	{"codec_in0", NULL, "ssp2 Rx"},
+-	{"codec_in1", NULL, "ssp2 Rx"},
+-	{"ssp2 Rx", NULL, "AIF1 Capture"},
+-
+ 	{"Headset Mic", NULL, "MICBIAS1"},
+ 	{"IN2P", NULL, "Headset Mic"},
+ 	{"Headphone", NULL, "HPOL"},
+ 	{"Headphone", NULL, "HPOR"},
+-	{"Speaker", NULL, "SPOLP"},
+-	{"Speaker", NULL, "SPOLN"},
+-	{"Speaker", NULL, "SPORP"},
+-	{"Speaker", NULL, "SPORN"},
+ };
+ 
+ static const struct snd_soc_dapm_route byt_rt5640_intmic_dmic1_map[] = {
+@@ -82,6 +79,54 @@
+ 	{"IN1P", NULL, "Internal Mic"},
+ };
+ 
++static const struct snd_soc_dapm_route byt_rt5640_ssp2_aif1_map[] = {
++	{"ssp2 Tx", NULL, "codec_out0"},
++	{"ssp2 Tx", NULL, "codec_out1"},
++	{"codec_in0", NULL, "ssp2 Rx"},
++	{"codec_in1", NULL, "ssp2 Rx"},
++
++	{"AIF1 Playback", NULL, "ssp2 Tx"},
++	{"ssp2 Rx", NULL, "AIF1 Capture"},
++};
++
++static const struct snd_soc_dapm_route byt_rt5640_ssp2_aif2_map[] = {
++	{"ssp2 Tx", NULL, "codec_out0"},
++	{"ssp2 Tx", NULL, "codec_out1"},
++	{"codec_in0", NULL, "ssp2 Rx"},
++	{"codec_in1", NULL, "ssp2 Rx"},
++
++	{"AIF2 Playback", NULL, "ssp2 Tx"},
++	{"ssp2 Rx", NULL, "AIF2 Capture"},
++};
++
++static const struct snd_soc_dapm_route byt_rt5640_ssp0_aif1_map[] = {
++	{"ssp0 Tx", NULL, "modem_out"},
++	{"modem_in", NULL, "ssp0 Rx"},
++
++	{"AIF1 Playback", NULL, "ssp0 Tx"},
++	{"ssp0 Rx", NULL, "AIF1 Capture"},
++};
++
++static const struct snd_soc_dapm_route byt_rt5640_ssp0_aif2_map[] = {
++	{"ssp0 Tx", NULL, "modem_out"},
++	{"modem_in", NULL, "ssp0 Rx"},
++
++	{"AIF2 Playback", NULL, "ssp0 Tx"},
++	{"ssp0 Rx", NULL, "AIF2 Capture"},
++};
++
++static const struct snd_soc_dapm_route byt_rt5640_stereo_spk_map[] = {
++	{"Speaker", NULL, "SPOLP"},
++	{"Speaker", NULL, "SPOLN"},
++	{"Speaker", NULL, "SPORP"},
++	{"Speaker", NULL, "SPORN"},
++};
++
++static const struct snd_soc_dapm_route byt_rt5640_mono_spk_map[] = {
++	{"Speaker", NULL, "SPOLP"},
++	{"Speaker", NULL, "SPOLN"},
++};
++
+ static const struct snd_kcontrol_new byt_rt5640_controls[] = {
+ 	SOC_DAPM_PIN_SWITCH("Headphone"),
+ 	SOC_DAPM_PIN_SWITCH("Headset Mic"),
+@@ -96,8 +141,6 @@
+ 	struct snd_soc_dai *codec_dai = rtd->codec_dai;
+ 	int ret;
+ 
+-	snd_soc_dai_set_bclk_ratio(codec_dai, 50);
+-
+ 	ret = snd_soc_dai_set_sysclk(codec_dai, RT5640_SCLK_S_PLL1,
+ 				     params_rate(params) * 512,
+ 				     SND_SOC_CLOCK_IN);
+@@ -106,9 +149,18 @@
+ 		return ret;
+ 	}
+ 
++	if ((byt_rt5640_quirk & BYT_RT5640_SSP0_AIF1) ||
++		(byt_rt5640_quirk & BYT_RT5640_SSP0_AIF2)) {
++
++		ret = snd_soc_dai_set_pll(codec_dai, 0, RT5640_PLL1_S_BCLK1,
++					params_rate(params) * 32, /* FIXME */
++					params_rate(params) * 512);
++	} else {
+ 	ret = snd_soc_dai_set_pll(codec_dai, 0, RT5640_PLL1_S_BCLK1,
+ 				  params_rate(params) * 50,
+ 				  params_rate(params) * 512);
++	}
++
+ 	if (ret < 0) {
+ 		dev_err(rtd->dev, "can't set codec pll: %d\n", ret);
+ 		return ret;
+@@ -127,16 +179,28 @@
+ 	{
+ 		.callback = byt_rt5640_quirk_cb,
+ 		.matches = {
+-			DMI_MATCH(DMI_SYS_VENDOR, "ASUSTeK COMPUTER INC."),
+-			DMI_MATCH(DMI_PRODUCT_NAME, "T100TA"),
++			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "ASUSTeK COMPUTER INC."),
++			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "T100TA"),
+ 		},
+-		.driver_data = (unsigned long *)BYT_RT5640_IN1_MAP,
++		.driver_data = (unsigned long *)(BYT_RT5640_IN1_MAP |
++						BYT_RT5640_SSP0_AIF2)
++	},
++	{
++		.callback = byt_rt5640_quirk_cb,
++		.matches = {
++			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "ASUSTeK COMPUTER INC."),
++			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "T100TAF"),
++		},
++		.driver_data = (unsigned long *)(BYT_RT5640_IN1_MAP |
++						 BYT_RT5640_MONO_SPEAKER |
++						 BYT_RT5640_DIFF_MIC
++						 ),
+ 	},
+ 	{
+ 		.callback = byt_rt5640_quirk_cb,
+ 		.matches = {
+-			DMI_MATCH(DMI_SYS_VENDOR, "DellInc."),
+-			DMI_MATCH(DMI_PRODUCT_NAME, "Venue 8 Pro 5830"),
++			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "DellInc."),
++			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Venue 8 Pro 5830"),
+ 		},
+ 		.driver_data = (unsigned long *)(BYT_RT5640_DMIC2_MAP |
+ 						 BYT_RT5640_DMIC_EN),
+@@ -144,11 +208,29 @@
+ 	{
+ 		.callback = byt_rt5640_quirk_cb,
+ 		.matches = {
+-			DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
+-			DMI_MATCH(DMI_PRODUCT_NAME, "HP ElitePad 1000 G2"),
++			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
++			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "HP ElitePad 1000 G2"),
+ 		},
+ 		.driver_data = (unsigned long *)BYT_RT5640_IN1_MAP,
+ 	},
++	{
++ 		.callback = byt_rt5640_quirk_cb,
++ 		.matches = {
++ 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "YIFANG"),
++ 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "NXW9QC132"),
++ 		},
++ 		.driver_data = (unsigned long *)(BYT_RT5640_DMIC2_MAP |
++						 BYT_RT5640_DMIC_EN),
++ 	}, 
++	{
++                .callback = byt_rt5640_quirk_cb,
++                .matches = {
++                        DMI_EXACT_MATCH(DMI_SYS_VENDOR, "YIFANG"),
++                        DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "NXW101QC232"),
++                },
++                .driver_data = (unsigned long *)(BYT_RT5640_DMIC2_MAP |
++                                                 BYT_RT5640_DMIC_EN),
++        },
+ 	{}
+ };
+ 
+@@ -192,6 +274,43 @@
+ 	if (ret)
+ 		return ret;
+ 
++	if (byt_rt5640_quirk & BYT_RT5640_SSP2_AIF2) {
++		ret = snd_soc_dapm_add_routes(&card->dapm,
++					byt_rt5640_ssp2_aif2_map,
++					ARRAY_SIZE(byt_rt5640_ssp2_aif2_map));
++	} else if (byt_rt5640_quirk & BYT_RT5640_SSP0_AIF1) {
++		ret = snd_soc_dapm_add_routes(&card->dapm,
++					byt_rt5640_ssp0_aif1_map,
++					ARRAY_SIZE(byt_rt5640_ssp0_aif1_map));
++	} else if (byt_rt5640_quirk & BYT_RT5640_SSP0_AIF2) {
++		ret = snd_soc_dapm_add_routes(&card->dapm,
++					byt_rt5640_ssp0_aif2_map,
++					ARRAY_SIZE(byt_rt5640_ssp0_aif2_map));
++	} else {
++		ret = snd_soc_dapm_add_routes(&card->dapm,
++					byt_rt5640_ssp2_aif1_map,
++					ARRAY_SIZE(byt_rt5640_ssp2_aif1_map));
++	}
++	if (ret)
++		return ret;
++
++	if (byt_rt5640_quirk & BYT_RT5640_MONO_SPEAKER) {
++		ret = snd_soc_dapm_add_routes(&card->dapm,
++					byt_rt5640_mono_spk_map,
++					ARRAY_SIZE(byt_rt5640_mono_spk_map));
++	} else {
++		ret = snd_soc_dapm_add_routes(&card->dapm,
++					byt_rt5640_stereo_spk_map,
++					ARRAY_SIZE(byt_rt5640_stereo_spk_map));
++	}
++	if (ret)
++		return ret;
++
++	if (byt_rt5640_quirk & BYT_RT5640_DIFF_MIC) {
++		snd_soc_update_bits(codec,  RT5640_IN1_IN2, RT5640_IN_DF1, 
++				    RT5640_IN_DF1);
++	}
++
+ 	if (byt_rt5640_quirk & BYT_RT5640_DMIC_EN) {
+ 		ret = rt5640_dmic_enable(codec, 0, 0);
+ 		if (ret)
+@@ -221,10 +340,39 @@
+ 						SNDRV_PCM_HW_PARAM_CHANNELS);
+ 	int ret;
+ 
+-	/* The DSP will covert the FE rate to 48k, stereo, 24bits */
++	/* The DSP will covert the FE rate to 48k, stereo */
+ 	rate->min = rate->max = 48000;
+ 	channels->min = channels->max = 2;
+ 
++	if ((byt_rt5640_quirk & BYT_RT5640_SSP0_AIF1) ||
++		(byt_rt5640_quirk & BYT_RT5640_SSP0_AIF2)) {
++
++		/* set SSP2 to 16-bit */
++		params_set_format(params, SNDRV_PCM_FORMAT_S16_LE);
++
++		/*
++		 * Default mode for SSP configuration is TDM 4 slot, override config
++		 * with explicit setting to I2S 2ch 16-bit. The word length is set with
++		 * dai_set_tdm_slot() since there is no other API exposed
++		 */
++		ret = snd_soc_dai_set_fmt(rtd->cpu_dai,
++					SND_SOC_DAIFMT_I2S     |
++					SND_SOC_DAIFMT_NB_IF   |
++					SND_SOC_DAIFMT_CBS_CFS
++			);
++		if (ret < 0) {
++			dev_err(rtd->dev, "can't set format to I2S, err %d\n", ret);
++			return ret;
++		}
++
++		ret = snd_soc_dai_set_tdm_slot(rtd->cpu_dai, 0x3, 0x3, 2, 16);
++		if (ret < 0) {
++			dev_err(rtd->dev, "can't set I2S config, err %d\n", ret);
++			return ret;
++		}
++
++	} else {
++
+ 	/* set SSP2 to 24-bit */
+ 	params_set_format(params, SNDRV_PCM_FORMAT_S24_LE);
+ 
+@@ -248,7 +396,7 @@
+ 		dev_err(rtd->dev, "can't set I2S config, err %d\n", ret);
+ 		return ret;
+ 	}
+-
++	}
+ 	return 0;
+ }
+ 
+@@ -305,10 +453,10 @@
+ 	{
+ 		.name = "SSP2-Codec",
+ 		.id = 1,
+-		.cpu_dai_name = "ssp2-port",
++		.cpu_dai_name = "ssp2-port", /* overwritten for ssp0 routing */
+ 		.platform_name = "sst-mfld-platform",
+ 		.no_pcm = 1,
+-		.codec_dai_name = "rt5640-aif1",
++		.codec_dai_name = "rt5640-aif1", /* changed w/ quirk */
+ 		.codec_name = "i2c-10EC5640:00", /* overwritten with HID */
+ 		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF
+ 						| SND_SOC_DAIFMT_CBS_CFS,
+@@ -335,6 +483,20 @@
+ };
+ 
+ static char byt_rt5640_codec_name[16]; /* i2c-<HID>:00 with HID being 8 chars */
++static char byt_rt5640_codec_aif_name[12]; /*  = "rt5640-aif[1|2]" */
++static char byt_rt5640_cpu_dai_name[10]; /*  = "ssp[0|2]-port" */
++
++static bool is_valleyview(void)
++{
++	static const struct x86_cpu_id cpu_ids[] __initconst = {
++		{ X86_VENDOR_INTEL, 6, 55 }, /* Valleyview, Bay Trail */
++		{}
++	};
++
++	if (!x86_match_cpu(cpu_ids))
++		return false;
++	return true;
++}
+ 
+ static int snd_byt_rt5640_mc_probe(struct platform_device *pdev)
+ {
+@@ -366,9 +528,46 @@
+ 		byt_rt5640_dais[dai_index].codec_name = byt_rt5640_codec_name;
+ 	}
+ 
++	/*
++	 * swap SSP0 if bytcr is detected
++	 * (will be overridden if DMI quirk is detected)
++	 */
++	if (is_valleyview()) {
++		struct sst_platform_info *p_info = mach->pdata;
++		const struct sst_res_info *res_info = p_info->res_info;
++
++		if (res_info->acpi_ipc_irq_index == 0) {
++			byt_rt5640_quirk |= BYT_RT5640_SSP0_AIF1;
++		}
++	}
++
+ 	/* check quirks before creating card */
+ 	dmi_check_system(byt_rt5640_quirk_table);
+ 
++	if ((byt_rt5640_quirk & BYT_RT5640_SSP2_AIF2) ||
++	    (byt_rt5640_quirk & BYT_RT5640_SSP0_AIF2)) {
++
++		/* fixup codec aif name */
++		snprintf(byt_rt5640_codec_aif_name,
++			sizeof(byt_rt5640_codec_aif_name),
++			"%s", "rt5640-aif2");
++
++		byt_rt5640_dais[dai_index].codec_dai_name =
++			byt_rt5640_codec_aif_name;
++	}
++
++	if ((byt_rt5640_quirk & BYT_RT5640_SSP0_AIF1) ||
++	    (byt_rt5640_quirk & BYT_RT5640_SSP0_AIF2)) {
++
++		/* fixup cpu dai name name */
++		snprintf(byt_rt5640_cpu_dai_name,
++			sizeof(byt_rt5640_cpu_dai_name),
++			"%s", "ssp0-port");
++
++		byt_rt5640_dais[dai_index].cpu_dai_name =
++			byt_rt5640_cpu_dai_name;
++	}
++
+ 	ret_val = devm_snd_soc_register_card(&pdev->dev, &byt_rt5640_card);
+ 
+ 	if (ret_val) {

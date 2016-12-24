@@ -1,0 +1,12 @@
+diff -Naur a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
+--- a/drivers/input/serio/i8042.c	2015-04-13 01:12:50.000000000 +0300
++++ b/drivers/input/serio/i8042.c	2015-04-22 12:18:50.519771077 +0300
+@@ -1492,6 +1492,8 @@
+ 
+ 	dbg_init();
+ 
++	return -ENODEV;
++
+ 	err = i8042_platform_init();
+ 	if (err)
+ 		return err;

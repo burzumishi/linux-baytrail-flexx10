@@ -1,6 +1,6 @@
 # Introduction
 
-This project is an efford to get **GNU/Linux** running on **[Nextbook Flexx 10.1"] (http://nextbookusa.com/productdetail.php?product_id=26)** Intel Atom Bay Trail device. 
+This project is an efford to get **GNU/Linux** running on **[Nextbook Flexx 10.1"] (http://nextbookusa.com/productdetail.php?product_id=26)** Intel Atom Bay Trail (ASoC) device. 
 
 NOTE: *Fleex 9 has almost the same hardware.*
 
@@ -11,10 +11,14 @@ This document has been tested with the following "GNU/Linux" distributions:
 - **[ElementaryOS] (https://elementary.io)**
 - **[Arch Linux] (https://www.archlinux.org)** (Thanks to: **@nicman23**)
 
-Boot, Kernel and ALSA documentation can be useful for:
+Except for distribution related commands, this documentation can be useful for:
 
+<<<<<<< HEAD
 - **[Android-x86] (http://www.android-x86.org)**
 - **[This google groups discussion] (https://groups.google.com/forum/#!topic/android-x86/un74okmr30g)**
+=======
+- **[Android-x86] (http://www.android-x86.org)** (Installed on USB stick ... it worked, but I have not written any doc yet ... **[Linux Live USB Creator] (http://www.linuxliveusb.com)** -- officially support Android-x86)
+>>>>>>> master
 
 
 ## System Hardware Summary
@@ -46,7 +50,7 @@ Boot, Kernel and ALSA documentation can be useful for:
  * Hibernation **/!\**
  * Sleep / Suspend **/!\**
  * Battery monitor **{i}**
- * Xorg&XWayland **{OK}**
+ * Xorg & XWayland **{OK}**
    - OpenGL **{OK}**
    - Resize-and-Rotate(randr) **{i}**
  * Screen backlight **{i}**
@@ -56,8 +60,13 @@ Boot, Kernel and ALSA documentation can be useful for:
    - Built-in (Touchpad) **{OK}**
    - Built-in (Touchscreen) **{i}**
  * Bluetooth {i} **{i}**
+<<<<<<< HEAD
  * Wireless/Wifi **{i}**
  * Keyboard's Hotkeys **[?]**
+=======
+ * Wireless/Wifi **{OK}**
+ * Keyboard's Hotkeys **{i}**
+>>>>>>> master
  * Sound **{i}**
  * MicroSD card reader **{OK}**
  * Built-in camera **{X}**
@@ -75,6 +84,8 @@ Legend : **{OK}** = OK ; **{X}** = Unsupported(No Driver) ; **/!\** = Error (Cou
 **[Sound ASoC]       (https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git)**
 **[WiFi ]            (https://github.com/hadess/rtl8723bs)**
 **[Bluetooth]        (https://github.com/lwfinger/rtl8723bs_bt)**
+**[Sound UCM]        (https://github.com/plbossart/UCM.git)**
+**[Battery]          (https://github.com/Icenowy/axpd.git)**
 ```
 
 # Installation
@@ -104,8 +115,10 @@ For linux, use dd or move everything to a properly labeled fat32 partition.
 ## Important Notes
 
 
+<<<<<<< HEAD
 {i} The following information and procedures are mostly extracted from the T100TA and Odys wintab 10.1 and adappted to the Flexx10. The T100TA has an hardware similar to that one of the Flexx10, informations and procedures regarding these two models can be usefully shared.
 
+>>>>>>> master
 {i} Before installing Linux, Secure Boot needs to be disabled. Also, if dual-booting with Windows 8 it is recommended to disable its fast boot feature.
 
 {i} Although the Debian Jessie (stable) installer includes all the needed modules and core changes to install and boot on this machine, it is advisable to install Debian Stretch (testing) and keep it up to date due to a lot of components still unsupported. If you really want to install Debian Jessie (stable) at least you can use the backport repository to install the latest kernels and firmwares when available.
@@ -194,23 +207,47 @@ For the root of your installation run `blkid /dev/mmcblk0p2` for this example. T
 - `search --no-floppy --fs-uuid --set=root foobar`
 - `linux ... root="foobar" ...`
 
+<<<<<<< HEAD
 (Note: in the second line, you might have something like root=/dev/foobar. Replace that with root=UUID=youruuid)
+=======
+```
+linux (hd1,gpt5)/boot/vmlinuz-3.13-xxxx root=/dev/mmcblk0p5 quiet intel_pstates=disabled
+```
+>>>>>>> master
 
 ### Installing Arch based distros
 
 You will need another machine or have an external usb network card. Following is installation with another arch machine on a usb.
 
+<<<<<<< HEAD
 Configure paritioning with an efi fat32 partition no more thatn 256M (just to be safe) and commit however much space you want for the root and format the root to f2fs for better 4k access/ latency.
+=======
+The "root=/dev/mmcblk0p5" will also depend on the partition you installed to. It will be your root partition. Unfortunately this can’t be auto-completed, so if you can’t remember your partition setup, you’ll need to try by trial and error.
+>>>>>>> master
 
 If you mount the usb installation's root in /mnt, mount the efi partition in /mnt/boot.
 
 Install arch-install-scripts do a standard pacstrap in the  with `pacstrap *where you mounted it* base base-devel git grub *somenetworkmanager*`
 
+<<<<<<< HEAD
 Chroot into it `sudo arch-chroot /*where you mounted it*`. Edit `/etc/default/grub` to use UUIDs
+=======
+```
+initrd (hd1,gpt5)/boot/initrd-3.13-xxxx
+````
+>>>>>>> master
 
 Install grub with `grub-install --target=i386-efi --no-nvram --efi-directory *where you mounted the efi dir* *path to usb efi block device*` and make a configuration for grub with `grub-mkconfig -o /boot/grub/grub.cfg`
 
+<<<<<<< HEAD
 Do the usual stuff (locale-gen, set the time, ...) and install from the aur the rtl8723bs-dkms-git package for wifi.
+=======
+Then boot with:
+
+```
+boot
+```
+>>>>>>> master
 
 Note: as with any installation, grub may (or not) crap itself and not use the right UUIDs
 
@@ -237,7 +274,7 @@ Once the system has booted sucessfully, it needs some tweaking:
 
 The wifi device is an on-board SDIO device Realtek R8723BS, firmware and module required.
 
-Grab the latest sources from git or download the zip file from: https://github.com/hadess/rtl8723bs
+Grab the latest sources from git or download the zip file from: **[@hadess git] (https://github.com/hadess/rtl8723bs)**
 
 Once downloaded build it:
 
@@ -252,18 +289,51 @@ modprobe r8723bs
 start network-manager
 ```
 
-If you need to build wifi again you can use:
+If you need to build wifi again you can use the script:
 
-scripts/install_rtl8723bs_debian.sh
+```
+kernel/install_rtl8723bs_debian.sh
+```
 
 NOTE: Wifi and a network conection are required to continue!
 
 
 ## Kernel 
-wip check issues/7
+wip check issues #7
 
+<<<<<<< HEAD
+=======
+```
+kernel/kernel_git.sh
+```
 
-NOTE: REBUILD WIFI MODULE!
+Once you have downloaded the kernel copy the configuration file from: 
+
+```
+cp kernel/config-4.8.0-rc2+ /your/kernel/source/.config
+cd source
+make menuconfig
+make INSTALL_MOD_STRIP=1 -j4 deb-pkg
+```
+
+Be patient this task takes about 3 or 4 hours, when it's finished you will get the debian package files:
+
+```
+../linux-firmware-image-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb
+../linux-headers-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb
+../linux-image-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb
+../linux-image-4.4.0-rc8+-dbg_4.4.0-rc8+-1_amd64.deb
+../linux-libc-dev_4.4.0-rc8+-1_amd64.deb
+```
+
+Install all packages except "dbg":
+
+```
+dpkg -i linux-firmware-image-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb linux-headers-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb linux-image-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb linux-libc-dev_4.4.0-rc8+-1_amd64.deb
+```
+>>>>>>> master
+
+NOTE: **REBUILD WIFI MODULE!**
 
 ## Bootloader (GRUB)
 
@@ -274,7 +344,7 @@ In order to boot up your system properly, it's needed to update GRUB's bootloade
 # grub-install --target i386-efi
 ```
 
-We want to copy the grubia32.efi from there to the location Debian created during installation:
+We want to copy the "grubia32.efi" from there to the location Debian created during installation:
 
 ```
 # cd /boot/efi/EFI
@@ -285,13 +355,13 @@ This should be enough to allow you to boot from the “debian” option in your 
 
 Before you boot, let’s add the default command line options to Grub.
 
-Open /etc/default grub in a text editor:
+Open "/etc/default/grub" in a text editor:
 
 ```
 sudo nano /etc/default/grub
 ```
 
-And edit the GRUB_CMDLINE_LINUX_DEFAULT exactly as we did before. When done, hit ctrl-o to save then ctrl-x to exit. Then, to update Grub:
+And edit the **GRUB_CMDLINE_LINUX_DEFAULT** exactly as we did before. When done, hit **Ctrl-o** to save then **Ctrl-x** to exit. Then, to update Grub:
 
 ```
 sudo update-grub
@@ -306,9 +376,9 @@ GRUB will not boot until you save the devices boot order from UEFI BIOS, this ma
 
 Status, Intel Crystal Cove PMIC
 
-The power management integrated circuit (PMIC) of the Intel Baytrail is called Crystal Cove. Full support for this PMIC is not yet available with kernel linux 4.2, so suspend to ram, hibernation and screen brightness controll does not work.
+The power management integrated circuit (PMIC) of the Intel Baytrail is called Crystal Cove. Full support for this PMIC is not yet available with kernel linux 4.x, so suspend to ram, hibernation and screen brightness controll does not work fine.
 
-Suspend to RAM does not work and sends the machine into a state from which one can only recover by forcing the shutdown. Hibernation partially works as it, like the suspend, requires to force the shutdown and at the following boot the system recovers from the hibernation but with some glitches. Some suggestions are discussed in this thread.
+Suspend to RAM does not work and sends the machine into a state from which one can only recover by forcing the shutdown. Hibernation partially works as it, like the suspend, requires to force the shutdown and at the following boot the system recovers from the hibernation but with some glitches.
 
 
 ## Screen brightness
@@ -347,21 +417,21 @@ and the <VALUE> should be something between 0 and 1. For example:
 $  xrandr --output DSI1 --brightness 0.8
 ```
 
-The script brightness_ctl.Stretch_flexx10.sh makes use of the command above to progressively reduce the screen brightness.
+The script **brightness_ctl.Stretch_flexx10.sh** makes use of the command above to progressively reduce the screen brightness.
 
 Check this post for further suggestions and instruction. Please be aware that using this workaround can impact on the battery duration, but it is better than lose data.
 
 ## Touchscreen
 
-Intel Graphics using i915 driver, X.org works.
+Intel Graphics using i915 driver, X.org works without patching.
 
 The accelerometers are not supported yet, therefore the screen can only be manually rotated using xrandr. However the touchscreen inputs also have to be manually adjusted with xinput to be coherent with the rotations. 
 
-For an example see the script ts_rotate.Stretch_flex10.sh.
+For an example see the script **ts_rotate.Stretch_flex10.sh.**
 
-The accelerometers work as of at least linux-image-4.3.0-rc3-amd64.
+The accelerometers work as of at least **linux-image-4.3.0-rc3-amd64**.
 
-The touchscreen is identified as FTSC1000:
+The touchscreen is identified as **FTSC1000**:
 ```
 $ xinput
 ⎡ Virtual core pointer                    	id=2	[master pointer  (3)]
@@ -375,15 +445,57 @@ $ xinput
     ↳ SINO WEALTH USB KEYBOARD                	id=7	[slave  keyboard (3)]
 ```
 
-## Audio
+## Intel SST Audio (RT5640)
 
-The device is an Intel SST Audio / Realtek RT5640. The firmware can be installed with:
+The device is an **Intel SST Audio / Realtek RT5640**. The firmware can be installed from "sound/firmware" directory:
 
+<<<<<<< HEAD
 Wip check issues/7
+=======
+```
+# apt-get install firmware-intel-sound
+# /lib/firmware/intel/fw_sst_0f28.bin /lib/firmware/intel/fw_sst_0f28.bin.orig
+# cp sound/firmware/fw_sst_0f28_ssp0.bin /lib/firmware/intel/fw_sst_0f28.bin
+```
+  
+However a manual configuration of the device is still required. It is possible to do it using alsactl (available in the package alsa-utils) and a proper configuration file. Download and apply the configuration file in this way:
 
-## Built-in camera
+```
+# cp asound.state /var/lib/alsa/
+# alsactl restore
+# sh set-alsa-bytcr-rt5640.sh
+```
 
-The model should be "xxxxxxx". Further information has to be retrieved.
+Clone **UCM** repository and install the files:
+
+**[Sound UCM]        (https://github.com/plbossart/UCM.git)**
+
+Then restart Pulseaudio:
+
+```
+pulseaudio -k
+pulseaudio --start
+```
+
+This will enable your sound card.
+
+Please be aware that there are reports indicating that in some cases the sound can be distorted and the speakers can be even damaged if the volume is high. Be careful in doing tests. Headphones work too but switching from the speaker is not automatic, it can be done using the audio manager of the DE or a dedicated application like **pavucontrol**.
+
+Use the firmware and the alsa configuration files available here.
+
+If you're still getting firmware errors maybe something is not properly configured or patched, firmware errores will increase your kernel boot time.
+
+
+## microSD Card Reader
+
+It's working.
+
+## Built-in camera (I2C)
+>>>>>>> master
+
+The model should be **"OV2680"**. There is no driver avaliable for Linux.
+
+Manufacturer: **[OVT] (http://www.ovt.com/products/sensor.php?id=140)**
 
 
 # Documentation

@@ -1,0 +1,13 @@
+diff --git a/sound/soc/intel/atom/sst-atom-controls.c b/sound/soc/intel/atom/sst-atom-controls.c
+index b97e6adcf1b2..98720a93de8a 100644
+--- a/sound/soc/intel/atom/sst-atom-controls.c
++++ b/sound/soc/intel/atom/sst-atom-controls.c
+@@ -195,7 +195,7 @@  static int sst_check_and_send_slot_map(struct sst_data *drv, struct snd_kcontrol
+ 
+ 	if (e->w && e->w->power)
+ 		ret = sst_send_slot_map(drv);
+-	else
++	else if (!e->w)
+ 		dev_err(&drv->pdev->dev, "Slot control: %s doesn't have DAPM widget!!!\n",
+ 				kcontrol->id.name);
+ 	return ret;

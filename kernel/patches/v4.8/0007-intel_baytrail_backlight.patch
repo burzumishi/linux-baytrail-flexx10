@@ -1,0 +1,333 @@
+diff -uwr linux-4.8-rc1.orig/drivers/gpu/drm/i915/i915_params.c linux-4.8-rc1.new/drivers/gpu/drm/i915/i915_params.c
+--- linux-4.8-rc1.orig/drivers/gpu/drm/i915/i915_params.c	2016-08-08 01:18:00.000000000 +0000
++++ linux-4.8-rc1.new/drivers/gpu/drm/i915/i915_params.c	2016-08-08 21:27:56.022502936 +0000
+@@ -61,6 +61,7 @@
+ 	.inject_load_failure = 0,
+ 	.enable_dpcd_backlight = false,
+ 	.enable_gvt = false,
++	.force_backlight_pmic = 1,
+ };
+ 
+ module_param_named(modeset, i915.modeset, int, 0400);
+@@ -185,6 +186,10 @@
+ 	"Enable the MMIO debug code for the first N failures (default: off). "
+ 	"This may negatively affect performance.");
+ 
++module_param_named(force_backlight_pmic, i915.force_backlight_pmic, bool, 0600);
++MODULE_PARM_DESC(force_backlight_pmic,
++	"Force backlight adjusting through pmic (default: false).");
++
+ module_param_named(verbose_state_checks, i915.verbose_state_checks, bool, 0600);
+ MODULE_PARM_DESC(verbose_state_checks,
+ 	"Enable verbose logs (ie. WARN_ON()) in case of unexpected hw state conditions.");
+diff -uwr linux-4.8-rc1.orig/drivers/gpu/drm/i915/i915_params.h linux-4.8-rc1.new/drivers/gpu/drm/i915/i915_params.h
+--- linux-4.8-rc1.orig/drivers/gpu/drm/i915/i915_params.h	2016-08-08 01:18:00.000000000 +0000
++++ linux-4.8-rc1.new/drivers/gpu/drm/i915/i915_params.h	2016-08-08 21:27:56.026500936 +0000
+@@ -64,6 +64,7 @@
+ 	bool enable_dp_mst;
+ 	bool enable_dpcd_backlight;
+ 	bool enable_gvt;
++	bool force_backlight_pmic;
+ };
+ 
+ extern struct i915_params i915 __read_mostly;
+diff -uwr linux-4.8-rc1.orig/drivers/gpu/drm/i915/intel_dsi.c linux-4.8-rc1.new/drivers/gpu/drm/i915/intel_dsi.c
+--- linux-4.8-rc1.orig/drivers/gpu/drm/i915/intel_dsi.c	2016-08-08 01:18:00.000000000 +0000
++++ linux-4.8-rc1.new/drivers/gpu/drm/i915/intel_dsi.c	2016-08-09 00:14:11.460349852 +0000
+@@ -614,6 +614,8 @@
+ 	struct drm_device *dev = encoder->base.dev;
+ 	struct drm_i915_private *dev_priv = to_i915(dev);
+ 	struct intel_dsi *intel_dsi = enc_to_intel_dsi(&encoder->base);
++        struct intel_connector *intel_connector =
++                intel_dsi->attached_connector;
+ 	enum port port;
+ 	u32 temp;
+ 
+@@ -627,6 +629,8 @@
+ 		msleep(2);
+ 	}
+ 
++	intel_panel_disable_backlight(intel_connector);
++
+ 	for_each_dsi_port(port, intel_dsi->ports) {
+ 		/* Panel commands can be sent when clock is in LP11 */
+ 		I915_WRITE(MIPI_DEVICE_READY(port), 0x0);
+@@ -1366,6 +1370,7 @@
+ 
+ 	DRM_DEBUG_KMS("\n");
+ 	intel_panel_fini(&intel_connector->panel);
++	intel_panel_destroy_backlight(connector);
+ 	drm_connector_cleanup(connector);
+ 	kfree(connector);
+ }
+diff -uwr linux-4.8-rc1.orig/drivers/gpu/drm/i915/intel_panel.c linux-4.8-rc1.new/drivers/gpu/drm/i915/intel_panel.c
+--- linux-4.8-rc1.orig/drivers/gpu/drm/i915/intel_panel.c	2016-08-08 01:18:00.000000000 +0000
++++ linux-4.8-rc1.new/drivers/gpu/drm/i915/intel_panel.c	2016-08-09 01:16:35.304276394 +0000
+@@ -32,6 +32,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/moduleparam.h>
++#include <linux/mfd/intel_soc_pmic.h>
+ #include <linux/pwm.h>
+ #include "intel_drv.h"
+ 
+@@ -535,13 +536,9 @@
+ 	return I915_READ(BXT_BLC_PWM_DUTY(panel->backlight.controller));
+ }
+ 
+-static u32 pwm_get_backlight(struct intel_connector *connector)
++static u32 vlv_pmic_get_backlight(struct intel_connector *connector)
+ {
+-	struct intel_panel *panel = &connector->panel;
+-	int duty_ns;
+-
+-	duty_ns = pwm_get_duty_cycle(panel->backlight.pwm);
+-	return DIV_ROUND_UP(duty_ns * 100, CRC_PMIC_PWM_PERIOD_NS);
++	return intel_soc_pmic_readb(0x4E);
+ }
+ 
+ static u32 intel_panel_get_backlight(struct intel_connector *connector)
+@@ -627,12 +624,9 @@
+ 	I915_WRITE(BXT_BLC_PWM_DUTY(panel->backlight.controller), level);
+ }
+ 
+-static void pwm_set_backlight(struct intel_connector *connector, u32 level)
++static void vlv_pmic_set_backlight(struct intel_connector *connector, u32 level)
+ {
+-	struct intel_panel *panel = &connector->panel;
+-	int duty_ns = DIV_ROUND_UP(level * CRC_PMIC_PWM_PERIOD_NS, 100);
+-
+-	pwm_config(panel->backlight.pwm, duty_ns, CRC_PMIC_PWM_PERIOD_NS);
++	intel_soc_pmic_writeb(0x4E, level);
+ }
+ 
+ static void
+@@ -798,14 +792,12 @@
+ 	}
+ }
+ 
+-static void pwm_disable_backlight(struct intel_connector *connector)
++static void vlv_pmic_disable_backlight(struct intel_connector *connector)
+ {
+-	struct intel_panel *panel = &connector->panel;
++	intel_panel_actually_set_backlight(connector, 0);
+ 
+-	/* Disable the backlight */
+-	pwm_config(panel->backlight.pwm, 0, CRC_PMIC_PWM_PERIOD_NS);
+-	usleep_range(2000, 3000);
+-	pwm_disable(panel->backlight.pwm);
++	intel_soc_pmic_writeb(0x51, 0x00);
++	intel_soc_pmic_writeb(0x4B, 0x7F);
+ }
+ 
+ void intel_panel_disable_backlight(struct intel_connector *connector)
+@@ -1065,11 +1057,14 @@
+ 			pwm_ctl | BXT_BLC_PWM_ENABLE);
+ }
+ 
+-static void pwm_enable_backlight(struct intel_connector *connector)
++static void vlv_pmic_enable_backlight(struct intel_connector *connector)
+ {
+ 	struct intel_panel *panel = &connector->panel;
+ 
+-	pwm_enable(panel->backlight.pwm);
++	intel_soc_pmic_writeb(0x4B, 0xFF);
++	intel_soc_pmic_writeb(0x4E, 0xFF);
++	intel_soc_pmic_writeb(0x51, 0x01);
++
+ 	intel_panel_actually_set_backlight(connector, panel->backlight.level);
+ }
+ 
+@@ -1327,30 +1322,6 @@
+ 	return DIV_ROUND_CLOSEST(clock, pwm_freq_hz * 128);
+ }
+ 
+-/*
+- * VLV: This value represents the period of the PWM stream in display core
+- * clocks ([DevCTG] 200MHz HRAW clocks) multiplied by 128 or 25MHz S0IX clocks
+- * multiplied by 16. CHV uses a 19.2MHz S0IX clock.
+- */
+-static u32 vlv_hz_to_pwm(struct intel_connector *connector, u32 pwm_freq_hz)
+-{
+-	struct drm_i915_private *dev_priv = to_i915(connector->base.dev);
+-	int mul, clock;
+-
+-	if ((I915_READ(CBR1_VLV) & CBR_PWM_CLOCK_MUX_SELECT) == 0) {
+-		if (IS_CHERRYVIEW(dev_priv))
+-			clock = KHz(19200);
+-		else
+-			clock = MHz(25);
+-		mul = 16;
+-	} else {
+-		clock = KHz(dev_priv->rawclk_freq);
+-		mul = 128;
+-	}
+-
+-	return DIV_ROUND_CLOSEST(clock, pwm_freq_hz * mul);
+-}
+-
+ static u32 get_backlight_max_vbt(struct intel_connector *connector)
+ {
+ 	struct drm_i915_private *dev_priv = to_i915(connector->base.dev);
+@@ -1615,42 +1586,16 @@
+ 	return 0;
+ }
+ 
+-static int pwm_setup_backlight(struct intel_connector *connector,
+-			       enum pipe pipe)
++static int vlv_pmic_setup_backlight(struct intel_connector *connector, enum pipe unused)
+ {
+-	struct drm_device *dev = connector->base.dev;
+ 	struct intel_panel *panel = &connector->panel;
+-	int retval;
+-
+-	/* Get the PWM chip for backlight control */
+-	panel->backlight.pwm = pwm_get(dev->dev, "pwm_backlight");
+-	if (IS_ERR(panel->backlight.pwm)) {
+-		DRM_ERROR("Failed to own the pwm chip\n");
+-		panel->backlight.pwm = NULL;
+-		return -ENODEV;
+-	}
+-
+-	/*
+-	 * FIXME: pwm_apply_args() should be removed when switching to
+-	 * the atomic PWM API.
+-	 */
+-	pwm_apply_args(panel->backlight.pwm);
+ 
+-	retval = pwm_config(panel->backlight.pwm, CRC_PMIC_PWM_PERIOD_NS,
+-			    CRC_PMIC_PWM_PERIOD_NS);
+-	if (retval < 0) {
+-		DRM_ERROR("Failed to configure the pwm chip\n");
+-		pwm_put(panel->backlight.pwm);
+-		panel->backlight.pwm = NULL;
+-		return retval;
+-	}
+-
+-	panel->backlight.min = 0; /* 0% */
+-	panel->backlight.max = 100; /* 100% */
+-	panel->backlight.level = DIV_ROUND_UP(
+-				 pwm_get_duty_cycle(panel->backlight.pwm) * 100,
+-				 CRC_PMIC_PWM_PERIOD_NS);
+-	panel->backlight.enabled = panel->backlight.level != 0;
++	printk("vlv_pmic_setup_backlight\n");
++	panel->backlight.present = 1;
++	panel->backlight.min = 0x00;
++	panel->backlight.max = 0xFF;
++	panel->backlight.level = 0x5A;
++	panel->backlight.enabled = 1;
+ 
+ 	return 0;
+ }
+@@ -1662,6 +1607,8 @@
+ 	struct intel_panel *panel = &intel_connector->panel;
+ 	int ret;
+ 
++	intel_backlight_device_register(intel_connector);
++
+ 	if (!dev_priv->vbt.backlight.present) {
+ 		if (dev_priv->quirks & QUIRK_BACKLIGHT_PRESENT) {
+ 			DRM_DEBUG_KMS("no backlight present per VBT, but present per quirk\n");
+@@ -1751,18 +1698,25 @@
+ 		panel->backlight.hz_to_pwm = pch_hz_to_pwm;
+ 	} else if (IS_VALLEYVIEW(dev_priv) || IS_CHERRYVIEW(dev_priv)) {
+ 		if (connector->base.connector_type == DRM_MODE_CONNECTOR_DSI) {
+-			panel->backlight.setup = pwm_setup_backlight;
+-			panel->backlight.enable = pwm_enable_backlight;
+-			panel->backlight.disable = pwm_disable_backlight;
+-			panel->backlight.set = pwm_set_backlight;
+-			panel->backlight.get = pwm_get_backlight;
++                       panel->backlight.setup = vlv_pmic_setup_backlight;
++                       panel->backlight.enable = vlv_pmic_enable_backlight;
++                       panel->backlight.disable = vlv_pmic_disable_backlight;
++                       panel->backlight.set = vlv_pmic_set_backlight;
++                       panel->backlight.get = vlv_pmic_get_backlight;
++               } else {
++		       if (i915.force_backlight_pmic) {
++                               panel->backlight.setup = vlv_pmic_setup_backlight;
++                               panel->backlight.enable = vlv_pmic_enable_backlight;
++                               panel->backlight.disable = vlv_pmic_disable_backlight;
++                               panel->backlight.set = vlv_pmic_set_backlight;
++                               panel->backlight.get = vlv_pmic_get_backlight;
+ 		} else {
+ 			panel->backlight.setup = vlv_setup_backlight;
+ 			panel->backlight.enable = vlv_enable_backlight;
+ 			panel->backlight.disable = vlv_disable_backlight;
+ 			panel->backlight.set = vlv_set_backlight;
+ 			panel->backlight.get = vlv_get_backlight;
+-			panel->backlight.hz_to_pwm = vlv_hz_to_pwm;
++			}
+ 		}
+ 	} else if (IS_GEN4(dev_priv)) {
+ 		panel->backlight.setup = i965_setup_backlight;
+diff -uwr linux-4.8-rc1.orig/drivers/mfd/intel_soc_pmic_core.c linux-4.8-rc1.new/drivers/mfd/intel_soc_pmic_core.c
+--- linux-4.8-rc1.orig/drivers/mfd/intel_soc_pmic_core.c	2016-08-08 01:18:00.000000000 +0000
++++ linux-4.8-rc1.new/drivers/mfd/intel_soc_pmic_core.c	2016-08-08 21:27:56.050488936 +0000
+@@ -44,6 +44,8 @@
+ 	PWM_LOOKUP("crystal_cove_pwm", 0, "0000:00:02.0", "pwm_backlight", 0, PWM_POLARITY_NORMAL),
+ };
+ 
++static struct intel_soc_pmic *pmic_hack = NULL;
++
+ static int intel_soc_pmic_find_gpio_irq(struct device *dev)
+ {
+ 	struct gpio_desc *desc;
+@@ -77,6 +79,7 @@
+ 	config = (struct intel_soc_pmic_config *)id->driver_data;
+ 
+ 	pmic = devm_kzalloc(dev, sizeof(*pmic), GFP_KERNEL);
++	pmic_hack = pmic;
+ 	if (!pmic)
+ 		return -ENOMEM;
+ 
+@@ -168,6 +171,38 @@
+ }
+ #endif
+ 
++int intel_soc_pmic_readb(int reg)
++{
++	int ret;
++	unsigned int val;
++
++	if (!pmic_hack) {
++		ret = -EIO;
++	} else {
++		ret = regmap_read(pmic_hack->regmap, reg, &val);
++		if (!ret) {
++			ret = val;
++		}
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL(intel_soc_pmic_readb);
++
++int intel_soc_pmic_writeb(int reg, u8 val)
++{
++	int ret;
++
++	if (!pmic_hack) {
++		ret = -EIO;
++	} else {
++		ret = regmap_write(pmic_hack->regmap, reg, val);
++	}
++	return ret;
++}
++EXPORT_SYMBOL(intel_soc_pmic_writeb);
++
++
+ static SIMPLE_DEV_PM_OPS(intel_soc_pmic_pm_ops, intel_soc_pmic_suspend,
+ 			 intel_soc_pmic_resume);
+ 
+diff -uwr linux-4.8-rc1.orig/include/linux/mfd/intel_soc_pmic.h linux-4.8-rc1.new/include/linux/mfd/intel_soc_pmic.h
+--- linux-4.8-rc1.orig/include/linux/mfd/intel_soc_pmic.h	2016-08-08 01:18:00.000000000 +0000
++++ linux-4.8-rc1.new/include/linux/mfd/intel_soc_pmic.h	2016-08-08 21:27:56.054486936 +0000
+@@ -29,4 +29,8 @@
+ 	struct device *dev;
+ };
+ 
++int intel_soc_pmic_readb(int reg);
++int intel_soc_pmic_writeb(int reg, u8 val);
++
++
+ #endif	/* __INTEL_SOC_PMIC_H__ */
