@@ -12,19 +12,13 @@ This document has been tested with the following "GNU/Linux" distributions:
 - **[Arch Linux] (https://www.archlinux.org)** (Thanks to: **@nicman23**)
 
 Except for distribution related commands, this documentation can be useful for:
-
-<<<<<<< HEAD
 - **[Android-x86] (http://www.android-x86.org)**
 - **[This google groups discussion] (https://groups.google.com/forum/#!topic/android-x86/un74okmr30g)**
-=======
 - **[Android-x86] (http://www.android-x86.org)** (Installed on USB stick ... it worked, but I have not written any doc yet ... **[Linux Live USB Creator] (http://www.linuxliveusb.com)** -- officially support Android-x86)
->>>>>>> master
-
 
 ## System Hardware Summary
 
 **[Nextbook Flexx 10.1"] (http://nextbookusa.com/productdetail.php?product_id=26)**
-
 
 ## Hardware
 
@@ -60,13 +54,10 @@ Except for distribution related commands, this documentation can be useful for:
    - Built-in (Touchpad) **{OK}**
    - Built-in (Touchscreen) **{i}**
  * Bluetooth {i} **{i}**
-<<<<<<< HEAD
  * Wireless/Wifi **{i}**
  * Keyboard's Hotkeys **[?]**
-=======
  * Wireless/Wifi **{OK}**
  * Keyboard's Hotkeys **{i}**
->>>>>>> master
  * Sound **{i}**
  * MicroSD card reader **{OK}**
  * Built-in camera **{X}**
@@ -114,11 +105,8 @@ For linux, use dd or move everything to a properly labeled fat32 partition.
 
 ## Important Notes
 
-
-<<<<<<< HEAD
 {i} The following information and procedures are mostly extracted from the T100TA and Odys wintab 10.1 and adappted to the Flexx10. The T100TA has an hardware similar to that one of the Flexx10, informations and procedures regarding these two models can be usefully shared.
 
->>>>>>> master
 {i} Before installing Linux, Secure Boot needs to be disabled. Also, if dual-booting with Windows 8 it is recommended to disable its fast boot feature.
 
 {i} Although the Debian Jessie (stable) installer includes all the needed modules and core changes to install and boot on this machine, it is advisable to install Debian Stretch (testing) and keep it up to date due to a lot of components still unsupported. If you really want to install Debian Jessie (stable) at least you can use the backport repository to install the latest kernels and firmwares when available.
@@ -207,21 +195,16 @@ For the root of your installation run `blkid /dev/mmcblk0p2` for this example. T
 - `search --no-floppy --fs-uuid --set=root foobar`
 - `linux ... root="foobar" ...`
 
-<<<<<<< HEAD
 (Note: in the second line, you might have something like root=/dev/foobar. Replace that with root=UUID=youruuid)
-=======
 ```
 linux (hd1,gpt5)/boot/vmlinuz-3.13-xxxx root=/dev/mmcblk0p5 quiet intel_pstates=disabled
 ```
->>>>>>> master
-
 ### Installing Arch based distros
 
 You will need another machine or have an external usb network card. Following is installation with another arch machine on a usb.
 
-<<<<<<< HEAD
 Configure paritioning with an efi fat32 partition no more thatn 256M (just to be safe) and commit however much space you want for the root and format the root to f2fs for better 4k access/ latency.
-=======
+
 The "root=/dev/mmcblk0p5" will also depend on the partition you installed to. It will be your root partition. Unfortunately this can’t be auto-completed, so if you can’t remember your partition setup, you’ll need to try by trial and error.
 >>>>>>> master
 
@@ -229,9 +212,7 @@ If you mount the usb installation's root in /mnt, mount the efi partition in /mn
 
 Install arch-install-scripts do a standard pacstrap in the  with `pacstrap *where you mounted it* base base-devel git grub *somenetworkmanager*`
 
-<<<<<<< HEAD
 Chroot into it `sudo arch-chroot /*where you mounted it*`. Edit `/etc/default/grub` to use UUIDs
-=======
 ```
 initrd (hd1,gpt5)/boot/initrd-3.13-xxxx
 ````
@@ -247,7 +228,6 @@ Then boot with:
 ```
 boot
 ```
->>>>>>> master
 
 Note: as with any installation, grub may (or not) crap itself and not use the right UUIDs
 
