@@ -204,7 +204,6 @@ You will need another machine or have an external usb network card. Following is
 Configure paritioning with an efi fat32 partition no more thatn 256M (just to be safe) and commit however much space you want for the root and format the root to f2fs for better 4k access/ latency.
 
 The "root=/dev/mmcblk0p5" will also depend on the partition you installed to. It will be your root partition. Unfortunately this can’t be auto-completed, so if you can’t remember your partition setup, you’ll need to try by trial and error.
->>>>>>> master
 
 If you mount the usb installation's root in /mnt, mount the efi partition in /mnt/boot.
 
