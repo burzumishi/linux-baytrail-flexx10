@@ -134,7 +134,6 @@ That will restart into the blue screen with options.
 
 ### To Turn "Fast Startup" On or Off in System Settings
 
-```
 1. Open the Control Panel (icons view), and click on the Power Options icon.
 2. Click/tap on the Choose what the power buttons do link on the left side. (see screenshot below)
 3. Click/tap on the Change settings that are currently unavailable link at the top. (see screenshot below)
@@ -161,7 +160,6 @@ That will restart into the blue screen with options.
   C) Go to step 8 below.
 
 8. You can now close the Power Options window if you like.
-```
 
 ### Installing Debian
 
@@ -215,16 +213,12 @@ Install arch-install-scripts do a standard pacstrap in the  with `pacstrap *wher
 Chroot into it `sudo arch-chroot /*where you mounted it*`. Edit `/etc/default/grub` to use UUIDs
 ```
 initrd (hd1,gpt5)/boot/initrd-3.13-xxxx
-````
->>>>>>> master
+```
 
 Install grub with `grub-install --target=i386-efi --no-nvram --efi-directory *where you mounted the efi dir* *path to usb efi block device*` and make a configuration for grub with `grub-mkconfig -o /boot/grub/grub.cfg`
 
-<<<<<<< HEAD
 Do the usual stuff (locale-gen, set the time, ...) and install from the aur the rtl8723bs-dkms-git package for wifi.
-=======
 Then boot with:
-
 ```
 boot
 ```
@@ -281,8 +275,6 @@ NOTE: Wifi and a network conection are required to continue!
 ## Kernel 
 wip check issues #7
 
-<<<<<<< HEAD
-=======
 ```
 kernel/kernel_git.sh
 ```
@@ -311,7 +303,6 @@ Install all packages except "dbg":
 ```
 dpkg -i linux-firmware-image-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb linux-headers-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb linux-image-4.4.0-rc8+_4.4.0-rc8+-1_amd64.deb linux-libc-dev_4.4.0-rc8+-1_amd64.deb
 ```
->>>>>>> master
 
 NOTE: **REBUILD WIFI MODULE!**
 
@@ -429,9 +420,7 @@ $ xinput
 
 The device is an **Intel SST Audio / Realtek RT5640**. The firmware can be installed from "sound/firmware" directory:
 
-<<<<<<< HEAD
 Wip check issues/7
-=======
 ```
 # apt-get install firmware-intel-sound
 # /lib/firmware/intel/fw_sst_0f28.bin /lib/firmware/intel/fw_sst_0f28.bin.orig
@@ -471,7 +460,6 @@ If you're still getting firmware errors maybe something is not properly configur
 It's working.
 
 ## Built-in camera (I2C)
->>>>>>> master
 
 The model should be **"OV2680"**. There is no driver avaliable for Linux.
 
