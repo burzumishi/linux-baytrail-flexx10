@@ -12,14 +12,13 @@ This document has been tested with the following "GNU/Linux" distributions:
 - **[Arch Linux] (https://www.archlinux.org)** (Thanks to: **@nicman23**)
 
 Except for distribution related commands, this documentation can be useful for:
-
+- **[Android-x86] (http://www.android-x86.org)**
+- **[This google groups discussion] (https://groups.google.com/forum/#!topic/android-x86/un74okmr30g)**
 - **[Android-x86] (http://www.android-x86.org)** (Installed on USB stick ... it worked, but I have not written any doc yet ... **[Linux Live USB Creator] (http://www.linuxliveusb.com)** -- officially support Android-x86)
-
 
 ## System Hardware Summary
 
 **[Nextbook Flexx 10.1"] (http://nextbookusa.com/productdetail.php?product_id=26)**
-
 
 ## Hardware
 
@@ -40,7 +39,7 @@ Except for distribution related commands, this documentation can be useful for:
 
  * Boot Standard Kernel **{OK}**
  * Detect hard drives **{OK}**
- * Shutdown **/!\**
+ * Shutdown **{OK}**
  * Reboot **{OK}**
  * Hibernation **/!\**
  * Sleep / Suspend **/!\**
@@ -50,11 +49,13 @@ Except for distribution related commands, this documentation can be useful for:
    - Resize-and-Rotate(randr) **{i}**
  * Screen backlight **{i}**
  * Light sensor **/!\**
- * Switch to External Screen (HDMI) **[?]**
+ * Switch to External Screen (HDMI)  **{OK}**
  * Mouse
    - Built-in (Touchpad) **{OK}**
    - Built-in (Touchscreen) **{i}**
  * Bluetooth {i} **{i}**
+ * Wireless/Wifi **{i}**
+ * Keyboard's Hotkeys **[?]**
  * Wireless/Wifi **{OK}**
  * Keyboard's Hotkeys **{i}**
  * Sound **{i}**
@@ -99,22 +100,22 @@ A BayTrail tablet.
 An USB storage medium to boot from.
 Optional: A storage medium (USB, SD-Card etc.) big enough to back up the Windows installation. I used a USB hard drive.
 Rufus: http://rufus.akeo.ie
+For linux, use dd or move everything to a properly labeled fat32 partition.
 ```
 
 ## Important Notes
 
-
-{i} The following information and procedures are mostly extracted from similar Baytrail devices model and adappted to the Flexx. The T100TA has an hardware similar to that one of the Flexx10, informations and procedures regarding these two models can be usefully shared.
-
-/!\ /!\ /!\ There is a grave issue in linux kernel > 4.3 (now available only in Debian Jessie) with CPU C-states which causes instability during mmc data operations, leading possibly to data loss and file system corruption. In linux kernel 4.2 the problem still persists and a workaround is proposed in the Power Management section, make sure to apply it also during the installation.
+{i} The following information and procedures are mostly extracted from the T100TA and Odys wintab 10.1 and adappted to the Flexx10. The T100TA has an hardware similar to that one of the Flexx10, informations and procedures regarding these two models can be usefully shared.
 
 {i} Before installing Linux, Secure Boot needs to be disabled. Also, if dual-booting with Windows 8 it is recommended to disable its fast boot feature.
 
 {i} Although the Debian Jessie (stable) installer includes all the needed modules and core changes to install and boot on this machine, it is advisable to install Debian Stretch (testing) and keep it up to date due to a lot of components still unsupported. If you really want to install Debian Jessie (stable) at least you can use the backport repository to install the latest kernels and firmwares when available.
 
-{i} In order to install Debian using the internet (e.g. with a netinst image) the wifi has to be enabled. See the steps described in the WiFi section, prepare the needed firmware (see also the d-i manual Loading Missing Firmware) and reproduce the steps using a shell during the installation procedure.
+{i} Another choice is any close to upstream distro (the Arch family will be supported here).
 
-{i} The Flexx 10.1 is a mixed mode EFI system (i.e. a 64-bit CPU combined with a 32-bit EFI) without any legacy BIOS mode. By default, the Debian i386 installer images should boot on this machine via UEFI and let you install a complete 32-bit (i386) system. If you use the multi-arch amd64/i386 netinst or DVD image, you will also be able to install in 64-bit mode. You might expect slightly better performance that way, but the limited memory on the machine (2 GiB) maybe will become more of an issue. Multi-arch DVD images must be modified before booting.
+{i} In order to install with any netboot image, by using the internet (e.g. with a netinst image), the wifi has to be enabled. See the steps described in the WiFi section, prepare the needed firmware (see also the d-i manual Loading Missing Firmware) and reproduce the steps using a shell during the installation procedure.
+
+{i} The Flexx 10.1 is a mixed mode EFI system (i.e. a 64-bit CPU combined with a 32-bit EFI) without any legacy BIOS mode. By default, any i386 installer images should boot on this machine via UEFI and let you install a complete 32-bit (i386) system. If you use the multi-arch amd64/i386 netinst or DVD image, you will also be able to install in 64-bit mode. You might expect slightly better performance that way in exchange for ram uasge. Multi-arch DVD images must be modified before booting.
 
 
 ## BIOS Access
@@ -133,7 +134,6 @@ That will restart into the blue screen with options.
 
 ### To Turn "Fast Startup" On or Off in System Settings
 
-```
 1. Open the Control Panel (icons view), and click on the Power Options icon.
 2. Click/tap on the Choose what the power buttons do link on the left side. (see screenshot below)
 3. Click/tap on the Change settings that are currently unavailable link at the top. (see screenshot below)
@@ -160,18 +160,14 @@ That will restart into the blue screen with options.
   C) Go to step 8 below.
 
 8. You can now close the Power Options window if you like.
-```
 
-### Create USB Media
+### Installing Debian
 
 Use Rufus with GPT Partition Table layout and formated with FAT32 to create a USB install disk. 
 
 Copy "grubia32.efi" in "D:\efi\grub\"
 
 NOTE: Do not overwrite "grubx64.efi" or "grub.efi"!
-
-
-### Booting Installation or Live Image
 
 Now, insert the USB stick and reboot to the firmware (BIOS). You can do this in Windows by holding shift when pressing “restart”, then touching Troubleshoot → Advanced Options → UEFI Firmware Settings → Restart.
 
@@ -181,53 +177,52 @@ Press F10 to save settings, and after a few seconds you will be in the GRUB boot
 
 Then press F10 to boot. You should get all the way to the Installation or Desktop.
 
-
-### Installing Linux
-
 The partitioning scheme you choose is up to you — but you will need to preserve the EFI partition, so don’t just partition the entire disk for Linux.
 
 In addition to the EFI partition, I prefer separate /, /home and /boot mount points; but that is up to you. You could squish down the Windows partition and created the additional partition(s), or just delete the Windows partition altogether if you don’t need it (not recommended).
 
-When done, reboot, leaving the USB stick in.
+When done, you need to modify the grub configuration or Linux won’t boot yet ;(
 
+In a terminal run `lsblk -f`. This should get you an idea on how to proceed. Your install will be located in the mmcblk0 block device (most likely).
 
-### First boot
+The usally mmcblk0p1  usally is the efi partition (fat32) that your grub installation is located and its size is no more than 512 (uefi limitation). Another partition that you will need to remember is the root of your linux installation. This is usually ext4 (or whatever you chose in the previous installation). If you removed windows mmcblk0p2 will probably be your ext4 root.
 
-Linux won’t boot yet ;(
+You’ll need to provide Grub with the path to your kernel and initrd to boot:
 
-Boot back to the Grub welcome screen on the USB stick. Hit ‘c’ to drop to a Grub command line.
+For the root of your installation run `blkid /dev/mmcblk0p2` for this example. This will print the UUID (and other information we do not need). Copy the UUID and in the /boot/efi/grub/grub.cfg search for the various menuentries. You will need to replace the uuid with the one you copied in the lines :
+- `search --no-floppy --fs-uuid --set=root foobar`
+- `linux ... root="foobar" ...`
 
-You’ll need to provide Grub with the path to your kernel and initrd to boot. First, the path to the kernel:
-
+(Note: in the second line, you might have something like root=/dev/foobar. Replace that with root=UUID=youruuid)
 ```
 linux (hd1,gpt5)/boot/vmlinuz-3.13-xxxx root=/dev/mmcblk0p5 quiet intel_pstates=disabled
 ```
+### Installing Arch based distros
 
-Here, (hd1, gpt5) refers to the fifth partition on the third disk (Partition numbering begins at 1 and disk numbering begins at 0). This will vary depending on how yo uinstalled and your Flexx model. On my 32GB model, Grub assigns the USB stick as hd0, the read-only recovery flash chip as hd1, and the main internal flash as hd1. gpt5 is the fifth partition, but it will depend on how you installed.
+You will need another machine or have an external usb network card. Following is installation with another arch machine on a usb.
 
-Fortunately, grub has good auto-completion features, so you can hit twice as you type, and grub will list possible completions for you — just keep trying until you see the various vmlinuz kernels.
+Configure paritioning with an efi fat32 partition no more thatn 256M (just to be safe) and commit however much space you want for the root and format the root to f2fs for better 4k access/ latency.
 
 The "root=/dev/mmcblk0p5" will also depend on the partition you installed to. It will be your root partition. Unfortunately this can’t be auto-completed, so if you can’t remember your partition setup, you’ll need to try by trial and error.
 
-To complete the line, press Enter.
+If you mount the usb installation's root in /mnt, mount the efi partition in /mnt/boot.
 
-Then you need to specify the location of your initrd. This is easy, it’s in the same place as the kernel:
+Install arch-install-scripts do a standard pacstrap in the  with `pacstrap *where you mounted it* base base-devel git grub *somenetworkmanager*`
 
+Chroot into it `sudo arch-chroot /*where you mounted it*`. Edit `/etc/default/grub` to use UUIDs
 ```
 initrd (hd1,gpt5)/boot/initrd-3.13-xxxx
-````
+```
 
-Then Enter.
+Install grub with `grub-install --target=i386-efi --no-nvram --efi-directory *where you mounted the efi dir* *path to usb efi block device*` and make a configuration for grub with `grub-mkconfig -o /boot/grub/grub.cfg`
 
+Do the usual stuff (locale-gen, set the time, ...) and install from the aur the rtl8723bs-dkms-git package for wifi.
 Then boot with:
-
 ```
 boot
 ```
 
-With luck after hitting Enter, you’ll boot through to Linux. If not, don’t be disheartened — keep trying, at this point your system is installed, review your settings.
-
-You can use "grub/grub_boot_commands.txt" as example.
+Note: as with any installation, grub may (or not) crap itself and not use the right UUIDs
 
 # System Configuration
 
@@ -276,11 +271,8 @@ kernel/install_rtl8723bs_debian.sh
 NOTE: Wifi and a network conection are required to continue!
 
 
-## Kernel (GIT)
-
-The best option is to upgrade the kernel to the latest review published in github.
-
-You can use this script to download all required dependencies, sources and patches:
+## Kernel 
+wip check issues #7
 
 ```
 kernel/kernel_git.sh
@@ -397,15 +389,6 @@ $  xrandr --output DSI1 --brightness 0.8
 
 The script **brightness_ctl.Stretch_flexx10.sh** makes use of the command above to progressively reduce the screen brightness.
 
-
-## CPU C-states issue with the internal eMMC
-
-This issue causes instability during mmc data operations, leading possibly to data loss and file system corruption, and it is discussed in this thread and a patch seems to be already proposed in this discussion. However a proper fix doesn't seem to be available yet. As a workaround it is necessary to boot the system with the kernel parameter:
-
-```
-intel_idle.max_cstate=0 intel_pstates=disabled
-```
-
 Check this post for further suggestions and instruction. Please be aware that using this workaround can impact on the battery duration, but it is better than lose data.
 
 ## Touchscreen
@@ -436,6 +419,7 @@ $ xinput
 
 The device is an **Intel SST Audio / Realtek RT5640**. The firmware can be installed from "sound/firmware" directory:
 
+Wip check issues/7
 ```
 # apt-get install firmware-intel-sound
 # /lib/firmware/intel/fw_sst_0f28.bin /lib/firmware/intel/fw_sst_0f28.bin.orig
