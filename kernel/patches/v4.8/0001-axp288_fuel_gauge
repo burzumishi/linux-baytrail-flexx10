@@ -1,0 +1,66 @@
+diff --git a/drivers/extcon/extcon-axp288.c b/drivers/extcon/extcon-axp288.c
+index fd55c2f..40c4b1a 100644
+--- a/drivers/extcon/extcon-axp288.c
++++ b/drivers/extcon/extcon-axp288.c
+@@ -270,6 +270,7 @@ static void axp288_extcon_enable_irq(struct axp288_extcon_info *info)
+ static int axp288_extcon_probe(struct platform_device *pdev)
+ {
+ 	struct axp288_extcon_info *info;
++	struct axp288_extcon_pdata *pdata;
+ 	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
+ 	int ret, i, pirq, gpio;
+ 
+@@ -280,7 +281,8 @@ static int axp288_extcon_probe(struct platform_device *pdev)
+ 	info->dev = &pdev->dev;
+ 	info->regmap = axp20x->regmap;
+ 	info->regmap_irqc = axp20x->regmap_irqc;
+-	info->pdata = pdev->dev.platform_data;
++	pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
++	info->pdata = pdata;
+ 
+ 	if (!info->pdata) {
+ 		/* Try ACPI provided pdata via device properties */
+diff --git a/drivers/power/axp288_charger.c b/drivers/power/axp288_charger.c
+index 4030eeb..aa1552a 100644
+--- a/drivers/power/axp288_charger.c
++++ b/drivers/power/axp288_charger.c
+@@ -812,6 +812,7 @@ static int axp288_charger_probe(struct platform_device *pdev)
+ {
+ 	int ret, i, pirq;
+ 	struct axp288_chrg_info *info;
++	struct axp20x_chrg_pdata *pdata;
+ 	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
+ 	struct power_supply_config charger_cfg = {};
+ 
+@@ -822,7 +823,9 @@ static int axp288_charger_probe(struct platform_device *pdev)
+ 	info->pdev = pdev;
+ 	info->regmap = axp20x->regmap;
+ 	info->regmap_irqc = axp20x->regmap_irqc;
+-	info->pdata = pdev->dev.platform_data;
++	pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
++	info->pdata = pdata;
++ 
+ 	if (!info->pdata) {
+ 		/* Try ACPI provided pdata via device properties */
+diff --git a/drivers/power/axp288_fuel_gauge.c b/drivers/power/axp288_fuel_gauge.c
+index 50c0110..01fa9ce 100644
+--- a/drivers/power/axp288_fuel_gauge.c
++++ b/drivers/power/axp288_fuel_gauge.c
+@@ -1080,6 +1080,7 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
+ {
+ 	int ret = 0;
+ 	struct axp288_fg_info *info;
++	struct axp20x_fg_pdata *pdata;
+ 	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
+ 	struct power_supply_config psy_cfg = {};
+ 
+@@ -1091,7 +1092,8 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
+ 	info->regmap = axp20x->regmap;
+ 	info->regmap_irqc = axp20x->regmap_irqc;
+ 	info->status = POWER_SUPPLY_STATUS_UNKNOWN;
+-	info->pdata = pdev->dev.platform_data;
++	pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
++	info->pdata=pdata;
+ 	if (!info->pdata)
+ 		return -ENODEV;
+ 
