@@ -1,0 +1,64 @@
+From e9fa6549dfb96096756a5dc36a5a701e1462f65e Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 22 Mar 2017 09:48:09 +0100
+Subject: [PATCH 35/91] mfd: intel_soc_pmic: Select designware i2c-bus driver
+
+The Crystal Cove PMIC provides an ACPI OPRegion handler, which must be
+available before other drivers using it are loaded, which is why
+INTEL_SOC_PMIC is a bool.
+
+Just having the driver is not enough, the driver for the i2c-bus must
+also be built in, to ensure this, this patch adds a select for it.
+
+This fixes errors like these during boot:
+
+mmc0: SDHCI controller on ACPI [80860F14:00] using ADMA
+ACPI Error: No handler for Region [REGS] (ffff93543b0cc3a8) [UserDefinedRegion] (20170119/evregion-166)
+ACPI Error: Region UserDefinedRegion (ID=143) has no handler (20170119/exfldio-299)
+ACPI Error: Method parse/execution failed [\_SB.PCI0.I2C7.PMI5.GET] (Node ffff93543b0cde10), AE_NOT_EXIST (20170119/psparse-543)
+ACPI Error: Method parse/execution failed [\_SB.PCI0.SHC1._PS0] (Node ffff93543b0b5cd0), AE_NOT_EXIST (20170119/psparse-543)
+acpi 80860F14:02: Failed to change power state to D0
+
+While at it this patch also changes the human readable name of the Kconfig
+option to make clear the INTEL_SOC_PMIC option selects support for the
+Intel Crystal Cove PMIC and documents why this is a bool.
+
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ drivers/mfd/Kconfig | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index 5203a86b8f6c..44e7164b5063 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -448,17 +448,22 @@ config LPC_SCH
+ 
+ config INTEL_SOC_PMIC
+ 	bool "Support for Crystal Cove PMIC"
+-	depends on GPIOLIB
+-	depends on I2C=y
++	depends on HAS_IOMEM && I2C=y && GPIOLIB && COMMON_CLK
++	depends on X86 || COMPILE_TEST
+ 	select MFD_CORE
+ 	select REGMAP_I2C
+ 	select REGMAP_IRQ
++	select I2C_DESIGNWARE_PLATFORM if ACPI
+ 	help
+ 	  Select this option to enable support for Crystal Cove PMIC
+ 	  on some Intel SoC systems. The PMIC provides ADC, GPIO,
+ 	  thermal, charger and related power management functions
+ 	  on these systems.
+ 
++	  This option is a bool as it provides an ACPI OpRegion which must be
++	  available before any devices using it are probed. This option also
++	  causes the designware-i2c driver to be builtin for the same reason.
++
+ config INTEL_SOC_PMIC_BXTWC
+ 	tristate "Support for Intel Broxton Whiskey Cove PMIC"
+ 	depends on INTEL_PMC_IPC
+-- 
+2.11.0
+

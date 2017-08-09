@@ -1,0 +1,355 @@
+From 90f6f24a0cf6463ba8619ee0149a6c75b60d42ca Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Sun, 26 Feb 2017 21:07:29 +0100
+Subject: [PATCH 02/91] mfd: Add Cherry Trail Whiskey Cove PMIC driver
+
+Add mfd driver for Intel CHT Whiskey Cove PMIC, based on various non
+upstreamed CHT Whiskey Cove PMIC patches.
+
+This is a somewhat minimal version which adds irqchip support and cells
+for: ACPI PMIC opregion support, the i2c-controller driving the external
+charger irc and the pwrsrc/extcon block.
+
+Further cells can be added in the future if/when drivers are upstreamed
+for them.
+
+Cc: Bin Gao <bin.gao@intel.com>
+Cc: Felipe Balbi <felipe.balbi@linux.intel.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+Changes in v2:
+-Since this uses plain mfd and not the intel_soc_pmic stuff give it
+ its own Kconfig and allow this to be built as a module
+-Add missing #include <acpi/acpi_bus.h>
+
+Changes in v3:
+-Drop #include <acpi/acpi_bus.h> again, not the right fix for the build errors
+-Error out when the upper byte of the register-address passed to the regmap
+ functions is 0 rather then hardcoding an address in that case
+-Various minor style tweaks / cleanups
+-Move defines of regulator register addresses to intel_pmic_chtwc.c,
+ it is the only place where they are used
+-Drop now empty include/linux/mfd/intel_chtwc.h
+-Rename intel_soc_pmic_chtwc.c to intel_cht_wc.c to match Kconfig option name
+-Add irqchip support
+-Add external charger cell
+-Add pwrsrc cell
+
+Changes in v4:
+-Use PLATFORM_DEVID_NONE
+
+Changes in v5:
+-Change Kconfig option from tristate to boolean and add a select for the
+ i2c-bus driver, this is necessary because the chtwc PMIC provides an ACPI
+ OPRegion handler, which must be available before other drivers using it
+ are loaded, which can only be ensured if the mfd, opregion and i2c-bus
+ drivers are built in. This fixes errors like these during boot:
+ mmc0: SDHCI controller on ACPI [80860F14:00] using ADMA
+ ACPI Error: No handler for Region [REGS] (ffff93543b0cc3a8) [UserDefinedRegion] (20170119/evregion-166)
+ ACPI Error: Region UserDefinedRegion (ID=143) has no handler (20170119/exfldio-299)
+ ACPI Error: Method parse/execution failed [\_SB.PCI0.I2C7.PMI5.GET] (Node ffff93543b0cde10), AE_NOT_EXIST (20170119/psparse-543)
+ ACPI Error: Method parse/execution failed [\_SB.PCI0.SHC1._PS0] (Node ffff93543b0b5cd0), AE_NOT_EXIST (20170119/psparse-543)
+ acpi 80860F14:02: Failed to change power state to D0
+-Some minor style and capitalization fixes from review by Lee Jones
+
+Changes in v6:
+-Fix Kconfig depends and selects to fix warning reported by kbuild test robot
+
+Changes in v7:
+-Add explanation why this is a bool and why it selects i2c-designwaree
+ to the help text rather then as comments in the Kconfig
+
+Changes in v8:
+-Remove MODULE macros, etc. now that this driver is a bool in Kconfig
+
+Changes in v9:
+-Some whitespace tweaks
+-Return -EINVAL from probe on invalid irq
+-Use probe_new i2c_driver callback
+---
+ drivers/mfd/Kconfig                |  16 +++
+ drivers/mfd/Makefile               |   1 +
+ drivers/mfd/intel_soc_pmic_chtwc.c | 230 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 247 insertions(+)
+ create mode 100644 drivers/mfd/intel_soc_pmic_chtwc.c
+
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index 3eb5c93595f6..5203a86b8f6c 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -470,6 +470,22 @@ config INTEL_SOC_PMIC_BXTWC
+ 	  thermal, charger and related power management functions
+ 	  on these systems.
+ 
++config INTEL_SOC_PMIC_CHTWC
++	tristate "Support for Intel Cherry Trail Whiskey Cove PMIC"
++	depends on ACPI && HAS_IOMEM && I2C=y && COMMON_CLK
++	depends on X86 || COMPILE_TEST
++	select MFD_CORE
++	select REGMAP_I2C
++	select REGMAP_IRQ
++	select I2C_DESIGNWARE_PLATFORM
++	help
++	  Select this option to enable support for the Intel Cherry Trail
++	  Whiskey Cove PMIC found on some Intel Cherry Trail systems.
++
++	  This option is a bool as it provides an ACPI OpRegion which must be
++	  available before any devices using it are probed. This option also
++	  causes the designware-i2c driver to be builtin for the same reason.
++
+ config MFD_INTEL_LPSS
+ 	tristate
+ 	select COMMON_CLK
+diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+index c16bf1ea0ea9..6f6aed8cfccc 100644
+--- a/drivers/mfd/Makefile
++++ b/drivers/mfd/Makefile
+@@ -214,6 +214,7 @@ obj-$(CONFIG_MFD_SKY81452)	+= sky81452.o
+ intel-soc-pmic-objs		:= intel_soc_pmic_core.o intel_soc_pmic_crc.o
+ obj-$(CONFIG_INTEL_SOC_PMIC)	+= intel-soc-pmic.o
+ obj-$(CONFIG_INTEL_SOC_PMIC_BXTWC)	+= intel_soc_pmic_bxtwc.o
++obj-$(CONFIG_INTEL_SOC_PMIC_CHTWC)	+= intel_soc_pmic_chtwc.o
+ obj-$(CONFIG_MFD_MT6397)	+= mt6397-core.o
+ 
+ obj-$(CONFIG_MFD_ALTERA_A10SR)	+= altera-a10sr.o
+diff --git a/drivers/mfd/intel_soc_pmic_chtwc.c b/drivers/mfd/intel_soc_pmic_chtwc.c
+new file mode 100644
+index 000000000000..b35da01d5bcf
+--- /dev/null
++++ b/drivers/mfd/intel_soc_pmic_chtwc.c
+@@ -0,0 +1,230 @@
++/*
++ * MFD core driver for Intel Cherrytrail Whiskey Cove PMIC
++ *
++ * Copyright (C) 2017 Hans de Goede <hdegoede@redhat.com>
++ *
++ * Based on various non upstream patches to support the CHT Whiskey Cove PMIC:
++ * Copyright (C) 2013-2015 Intel Corporation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/acpi.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/i2c.h>
++#include <linux/interrupt.h>
++#include <linux/kernel.h>
++#include <linux/mfd/core.h>
++#include <linux/mfd/intel_soc_pmic.h>
++#include <linux/regmap.h>
++
++/* PMIC device registers */
++#define REG_OFFSET_MASK		GENMASK(7, 0)
++#define REG_ADDR_MASK		GENMASK(15, 8)
++#define REG_ADDR_SHIFT		8
++
++#define CHT_WC_IRQLVL1		0x6e02
++#define CHT_WC_IRQLVL1_MASK	0x6e0e
++
++/* Whiskey Cove PMIC share same ACPI ID between different platforms */
++#define CHT_WC_HRV		3
++
++/* Level 1 IRQs (level 2 IRQs are handled in the child device drivers) */
++enum {
++	CHT_WC_PWRSRC_IRQ = 0,
++	CHT_WC_THRM_IRQ,
++	CHT_WC_BCU_IRQ,
++	CHT_WC_ADC_IRQ,
++	CHT_WC_EXT_CHGR_IRQ,
++	CHT_WC_GPIO_IRQ,
++	/* There is no irq 6 */
++	CHT_WC_CRIT_IRQ = 7,
++};
++
++static struct resource cht_wc_pwrsrc_resources[] = {
++	DEFINE_RES_IRQ(CHT_WC_PWRSRC_IRQ),
++};
++
++static struct resource cht_wc_ext_charger_resources[] = {
++	DEFINE_RES_IRQ(CHT_WC_EXT_CHGR_IRQ),
++};
++
++static struct mfd_cell cht_wc_dev[] = {
++	{
++		.name = "cht_wcove_pwrsrc",
++		.num_resources = ARRAY_SIZE(cht_wc_pwrsrc_resources),
++		.resources = cht_wc_pwrsrc_resources,
++	}, {
++		.name = "cht_wcove_ext_chgr",
++		.num_resources = ARRAY_SIZE(cht_wc_ext_charger_resources),
++		.resources = cht_wc_ext_charger_resources,
++	},
++	{	.name = "cht_wcove_region", },
++};
++
++/*
++ * The CHT Whiskey Cove covers multiple I2C addresses, with a 1 Byte
++ * register address space per I2C address, so we use 16 bit register
++ * addresses where the high 8 bits contain the I2C client address.
++ */
++static int cht_wc_byte_reg_read(void *context, unsigned int reg,
++				unsigned int *val)
++{
++	struct i2c_client *client = context;
++	int ret, orig_addr = client->addr;
++
++	if (!(reg & REG_ADDR_MASK)) {
++		dev_err(&client->dev, "Error I2C address not specified\n");
++		return -EINVAL;
++	}
++
++	client->addr = (reg & REG_ADDR_MASK) >> REG_ADDR_SHIFT;
++	ret = i2c_smbus_read_byte_data(client, reg & REG_OFFSET_MASK);
++	client->addr = orig_addr;
++
++	if (ret < 0)
++		return ret;
++
++	*val = ret;
++	return 0;
++}
++
++static int cht_wc_byte_reg_write(void *context, unsigned int reg,
++				 unsigned int val)
++{
++	struct i2c_client *client = context;
++	int ret, orig_addr = client->addr;
++
++	if (!(reg & REG_ADDR_MASK)) {
++		dev_err(&client->dev, "Error I2C address not specified\n");
++		return -EINVAL;
++	}
++
++	client->addr = (reg & REG_ADDR_MASK) >> REG_ADDR_SHIFT;
++	ret = i2c_smbus_write_byte_data(client, reg & REG_OFFSET_MASK, val);
++	client->addr = orig_addr;
++
++	return ret;
++}
++
++static const struct regmap_config cht_wc_regmap_cfg = {
++	.reg_bits = 16,
++	.val_bits = 8,
++	.reg_write = cht_wc_byte_reg_write,
++	.reg_read = cht_wc_byte_reg_read,
++};
++
++static const struct regmap_irq cht_wc_regmap_irqs[] = {
++	REGMAP_IRQ_REG(CHT_WC_PWRSRC_IRQ, 0, BIT(CHT_WC_PWRSRC_IRQ)),
++	REGMAP_IRQ_REG(CHT_WC_THRM_IRQ, 0, BIT(CHT_WC_THRM_IRQ)),
++	REGMAP_IRQ_REG(CHT_WC_BCU_IRQ, 0, BIT(CHT_WC_BCU_IRQ)),
++	REGMAP_IRQ_REG(CHT_WC_ADC_IRQ, 0, BIT(CHT_WC_ADC_IRQ)),
++	REGMAP_IRQ_REG(CHT_WC_EXT_CHGR_IRQ, 0, BIT(CHT_WC_EXT_CHGR_IRQ)),
++	REGMAP_IRQ_REG(CHT_WC_GPIO_IRQ, 0, BIT(CHT_WC_GPIO_IRQ)),
++	REGMAP_IRQ_REG(CHT_WC_CRIT_IRQ, 0, BIT(CHT_WC_CRIT_IRQ)),
++};
++
++static const struct regmap_irq_chip cht_wc_regmap_irq_chip = {
++	.name = "cht_wc_irq_chip",
++	.status_base = CHT_WC_IRQLVL1,
++	.mask_base = CHT_WC_IRQLVL1_MASK,
++	.irqs = cht_wc_regmap_irqs,
++	.num_irqs = ARRAY_SIZE(cht_wc_regmap_irqs),
++	.num_regs = 1,
++};
++
++static int cht_wc_probe(struct i2c_client *client)
++{
++	struct device *dev = &client->dev;
++	struct intel_soc_pmic *pmic;
++	acpi_status status;
++	unsigned long long hrv;
++	int ret;
++
++	status = acpi_evaluate_integer(ACPI_HANDLE(dev), "_HRV", NULL, &hrv);
++	if (ACPI_FAILURE(status)) {
++		dev_err(dev, "Failed to get PMIC hardware revision\n");
++		return -ENODEV;
++	}
++	if (hrv != CHT_WC_HRV) {
++		dev_err(dev, "Invalid PMIC hardware revision: %llu\n", hrv);
++		return -ENODEV;
++	}
++	if (client->irq < 0) {
++		dev_err(dev, "Invalid IRQ\n");
++		return -EINVAL;
++	}
++
++	pmic = devm_kzalloc(dev, sizeof(*pmic), GFP_KERNEL);
++	if (!pmic)
++		return -ENOMEM;
++
++	pmic->irq = client->irq;
++	pmic->dev = dev;
++	i2c_set_clientdata(client, pmic);
++
++	pmic->regmap = devm_regmap_init(dev, NULL, client, &cht_wc_regmap_cfg);
++	if (IS_ERR(pmic->regmap))
++		return PTR_ERR(pmic->regmap);
++
++	ret = devm_regmap_add_irq_chip(dev, pmic->regmap, pmic->irq,
++				       IRQF_ONESHOT | IRQF_SHARED, 0,
++				       &cht_wc_regmap_irq_chip,
++				       &pmic->irq_chip_data);
++	if (ret)
++		return ret;
++
++	return devm_mfd_add_devices(dev, PLATFORM_DEVID_NONE,
++				cht_wc_dev, ARRAY_SIZE(cht_wc_dev), NULL, 0,
++				regmap_irq_get_domain(pmic->irq_chip_data));
++}
++
++static void cht_wc_shutdown(struct i2c_client *client)
++{
++	struct intel_soc_pmic *pmic = i2c_get_clientdata(client);
++
++	disable_irq(pmic->irq);
++}
++
++static int __maybe_unused cht_wc_suspend(struct device *dev)
++{
++	struct intel_soc_pmic *pmic = dev_get_drvdata(dev);
++
++	disable_irq(pmic->irq);
++
++	return 0;
++}
++
++static int __maybe_unused cht_wc_resume(struct device *dev)
++{
++	struct intel_soc_pmic *pmic = dev_get_drvdata(dev);
++
++	enable_irq(pmic->irq);
++
++	return 0;
++}
++static SIMPLE_DEV_PM_OPS(cht_wc_pm_ops, cht_wc_suspend, cht_wc_resume);
++
++static const struct i2c_device_id cht_wc_i2c_id[] = {
++	{ }
++};
++
++static const struct acpi_device_id cht_wc_acpi_ids[] = {
++	{ "INT34D3", },
++	{ }
++};
++
++static struct i2c_driver cht_wc_driver = {
++	.driver	= {
++		.name	= "CHT Whiskey Cove PMIC",
++		.pm     = &cht_wc_pm_ops,
++		.acpi_match_table = cht_wc_acpi_ids,
++	},
++	.probe_new = cht_wc_probe,
++	.shutdown = cht_wc_shutdown,
++	.id_table = cht_wc_i2c_id,
++};
++builtin_i2c_driver(cht_wc_driver);
+-- 
+2.11.0
+

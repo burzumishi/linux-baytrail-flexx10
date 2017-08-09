@@ -1,0 +1,61 @@
+From d6e9f1bcbe2153041884e982a6c4a9b609fbc0a1 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 18 May 2017 13:19:30 +0200
+Subject: [PATCH 41/91] drm/i915: Acquire PUNIT->PMIC bus for
+ intel_uncore_forcewake_reset()
+
+intel_uncore_forcewake_reset() does forcewake puts and gets as such
+we need to make sure that no-one tries to access the PUNIT->PMIC bus
+(on systems where this bus is shared) while it runs, otherwise bad
+things happen.
+
+Normally this is taken care of by the i915_pmic_bus_access_notifier()
+which does an intel_uncore_forcewake_get(FORCEWAKE_ALL) when some other
+driver tries to access the PMIC bus, so that later forcewake gets are
+no-ops (for the duration of the bus access).
+
+But intel_uncore_forcewake_reset gets called in 3 cases:
+1) Before registering the pmic_bus_access_notifier
+2) After unregistering the pmic_bus_access_notifier
+3) To reset forcewake state on a GPU reset
+
+In all 3 cases the i915_pmic_bus_access_notifier() protection is
+insufficient. This commit fixes the pmic bus access race this causes
+by making intel_uncore_forcewake_reset() call iosf_mbi_punit_acquire()
+(and iosf_mbi_punit_release() when done).
+
+Note that iosf_mbi_punit_acquire() locks a mutex and thus
+intel_uncore_forcewake_reset() may sleep after this commit. I've checked
+all callers and they all already take other mutexes, so this is not a
+problem.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/gpu/drm/i915/intel_uncore.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/gpu/drm/i915/intel_uncore.c b/drivers/gpu/drm/i915/intel_uncore.c
+index 882cf7187a57..0fb829cc1cbd 100644
+--- a/drivers/gpu/drm/i915/intel_uncore.c
++++ b/drivers/gpu/drm/i915/intel_uncore.c
+@@ -252,6 +252,9 @@ static void intel_uncore_forcewake_reset(struct drm_i915_private *dev_priv,
+ 	int retry_count = 100;
+ 	enum forcewake_domains fw, active_domains;
+ 
++	/* Acquire the PUNIT->PMIC bus before modifying forcewake settings */
++	iosf_mbi_punit_acquire();
++
+ 	/* Hold uncore.lock across reset to prevent any register access
+ 	 * with forcewake not set correctly. Wait until all pending
+ 	 * timers are run before holding.
+@@ -308,6 +311,7 @@ static void intel_uncore_forcewake_reset(struct drm_i915_private *dev_priv,
+ 		assert_forcewakes_inactive(dev_priv);
+ 
+ 	spin_unlock_irqrestore(&dev_priv->uncore.lock, irqflags);
++	iosf_mbi_punit_release();
+ }
+ 
+ static u64 gen9_edram_size(struct drm_i915_private *dev_priv)
+-- 
+2.11.0
+

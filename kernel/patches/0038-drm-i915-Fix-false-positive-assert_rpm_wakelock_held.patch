@@ -1,0 +1,57 @@
+From 89e15eec97c2fe5bf671e02147dc810882f5cfd5 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 18 May 2017 12:57:22 +0200
+Subject: [PATCH 38/91] drm/i915: Fix false-positive assert_rpm_wakelock_held
+ in i915_pmic_bus_access_notifier
+
+assert_rpm_wakelock_held is triggered from i915_pmic_bus_access_notifier
+even though it gets unregistered on (runtime) suspend, this is caused
+by a race happening under the following circumstances:
+
+intel_runtime_pm_put does:
+
+   atomic_dec(&dev_priv->pm.wakeref_count);
+
+   pm_runtime_mark_last_busy(kdev);
+   pm_runtime_put_autosuspend(kdev);
+
+And pm_runtime_put_autosuspend calls intel_runtime_suspend from
+a workqueue, so there is ample of time between the atomic_dec() and
+intel_runtime_suspend() unregistering the notifier. If the notifier
+gets called in this windowd assert_rpm_wakelock_held falsely triggers
+(at this point we're not runtime-suspended yet).
+
+This commit adds disable_rpm_wakeref_asserts and
+enable_rpm_wakeref_asserts calls around the
+intel_uncore_forcewake_get(FORCEWAKE_ALL) call in
+i915_pmic_bus_access_notifier fixing the false-positive WARN_ON.
+
+Reported-by: FKr <bugs-freedesktop@ubermail.me>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/gpu/drm/i915/intel_uncore.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/gpu/drm/i915/intel_uncore.c b/drivers/gpu/drm/i915/intel_uncore.c
+index 6d1ea26b2493..dc5e4f3e5a43 100644
+--- a/drivers/gpu/drm/i915/intel_uncore.c
++++ b/drivers/gpu/drm/i915/intel_uncore.c
+@@ -1286,8 +1286,15 @@ static int i915_pmic_bus_access_notifier(struct notifier_block *nb,
+ 		 * bus, which will be busy after this notification, leading to:
+ 		 * "render: timed out waiting for forcewake ack request."
+ 		 * errors.
++		 *
++		 * This notifier may get called between intel_runtime_pm_put()
++		 * doing atomic_dec(wakeref_count) and intel_runtime_resume()
++		 * unregistering this notifier, which leads to false-positive
++		 * assert_rpm_wakelock_held() triggering.
+ 		 */
++		disable_rpm_wakeref_asserts(dev_priv);
+ 		intel_uncore_forcewake_get(dev_priv, FORCEWAKE_ALL);
++		enable_rpm_wakeref_asserts(dev_priv);
+ 		break;
+ 	case MBI_PMIC_BUS_ACCESS_END:
+ 		intel_uncore_forcewake_put(dev_priv, FORCEWAKE_ALL);
+-- 
+2.11.0
+
