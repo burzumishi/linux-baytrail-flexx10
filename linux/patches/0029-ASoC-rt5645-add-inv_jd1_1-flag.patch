@@ -1,0 +1,47 @@
+From cf7e56391d3724af787c609cec1fbdf04973875b Mon Sep 17 00:00:00 2001
+From: Bard Liao <bardliao@realtek.com>
+Date: Wed, 28 Jun 2017 14:49:38 +0200
+Subject: [PATCH 29/91] ASoC: rt5645: add inv_jd1_1 flag
+
+The flag will invert jd1_1 status. Which will be used if the jack
+connector is normal closed.
+
+Signed-off-by: Bard Liao <bardliao@realtek.com>
+Tested-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+---
+ include/sound/rt5645.h    | 2 ++
+ sound/soc/codecs/rt5645.c | 4 ++++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/include/sound/rt5645.h b/include/sound/rt5645.h
+index c427f10a39ae..d0c33a9972b9 100644
+--- a/include/sound/rt5645.h
++++ b/include/sound/rt5645.h
+@@ -23,6 +23,8 @@ struct rt5645_platform_data {
+ 	unsigned int jd_mode;
+ 	/* Use level triggered irq */
+ 	bool level_trigger_irq;
++	/* Invert JD1_1 status polarity */
++	bool inv_jd1_1;
+ };
+ 
+ #endif
+diff --git a/sound/soc/codecs/rt5645.c b/sound/soc/codecs/rt5645.c
+index 79de5f235b09..52056ec6f8c7 100644
+--- a/sound/soc/codecs/rt5645.c
++++ b/sound/soc/codecs/rt5645.c
+@@ -3833,6 +3833,10 @@ static int rt5645_i2c_probe(struct i2c_client *i2c,
+ 		default:
+ 			break;
+ 		}
++		if (rt5645->pdata.inv_jd1_1) {
++			regmap_update_bits(rt5645->regmap, RT5645_IRQ_CTRL2,
++				RT5645_JD_1_1_MASK, RT5645_JD_1_1_INV);
++		}
+ 	}
+ 
+ 	regmap_update_bits(rt5645->regmap, RT5645_ADDA_CLK1,
+-- 
+2.11.0
+

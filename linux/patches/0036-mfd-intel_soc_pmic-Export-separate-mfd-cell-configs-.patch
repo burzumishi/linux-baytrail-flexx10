@@ -1,0 +1,129 @@
+From 6b552b59b9960e55a115a0df57186b28c2211035 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 21 Jun 2017 16:19:37 +0200
+Subject: [PATCH 36/91] mfd: intel_soc_pmic: Export separate mfd-cell configs
+ for BYT and CHT
+
+Both Bay and Cherry Trail devices may be used together with a Crystal Cove
+PMIC. Each platform has its own variant of the PMIC, which both use the
+same ACPI HID, but they are not 100% compatible.
+
+Looking at the android x86 kernel sources where most of the Crystal Cove
+code comes from, it talks about "Valley View", "Bay Trail" and / or BYT
+without ever mentioning Cherry Trail, with the exception of the regulator
+driver. The Asus Zenfone-2 kernel code has 2 regulator drivers, one
+for Crystal Cove and one for what it calls Crystal Cove Plus. The
+Crystal Cove Plus regulator driver is the only one to mention Cherry
+Trail and that driver uses different register addresses then the
+normal (Bay Trail) Crystal Cove regulator driver, showing that at
+least the regulator register addresses are different.
+
+The GPIO code should work on both, and the PWM code is known to work on
+both and is necessary for backlight control on some Cherry Trail devices.
+
+Testing has shown that the ACPI OpRegion code otoh is causing problems
+on Cherry Trail devices, which is not surprising as it deals with the
+regulators and those have different register addresses on CHT.
+
+Specifically the ACPI OpRegion code causes the external microsd slot on
+a Dell Venue 8 5855 (Cherry Trail version) to not work and the eMMC to
+become unreliable and throw lots of errors.
+
+This commit replaces the single mfd_cell array currently used for Crystal
+Cove with 2 separate arrays, one for the Bay Trail variant and one for
+the Cherry Trail variant, note that the Cherry Trail version of the array
+only contains gpio and pwm cells. The PMIC OpRegion cell is deliberately
+not included and drivers for the other cells in the Bay Trail cell array
+were never upstreamed.
+
+Reported-and-tested-by: russianneuromancer <russianneuromancer@ya.ru>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+---
+ drivers/mfd/intel_soc_pmic_core.c |  2 +-
+ drivers/mfd/intel_soc_pmic_core.h |  3 ++-
+ drivers/mfd/intel_soc_pmic_crc.c  | 27 +++++++++++++++++++++++----
+ 3 files changed, 26 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/mfd/intel_soc_pmic_core.c b/drivers/mfd/intel_soc_pmic_core.c
+index 13737be6df35..2234a847370a 100644
+--- a/drivers/mfd/intel_soc_pmic_core.c
++++ b/drivers/mfd/intel_soc_pmic_core.c
+@@ -157,7 +157,7 @@ MODULE_DEVICE_TABLE(i2c, intel_soc_pmic_i2c_id);
+ 
+ #if defined(CONFIG_ACPI)
+ static const struct acpi_device_id intel_soc_pmic_acpi_match[] = {
+-	{"INT33FD", (kernel_ulong_t)&intel_soc_pmic_config_crc},
++	{"INT33FD", (kernel_ulong_t)&intel_soc_pmic_config_byt_crc},
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(acpi, intel_soc_pmic_acpi_match);
+diff --git a/drivers/mfd/intel_soc_pmic_core.h b/drivers/mfd/intel_soc_pmic_core.h
+index ff2464bc172f..90a1416d4dac 100644
+--- a/drivers/mfd/intel_soc_pmic_core.h
++++ b/drivers/mfd/intel_soc_pmic_core.h
+@@ -27,6 +27,7 @@ struct intel_soc_pmic_config {
+ 	const struct regmap_irq_chip *irq_chip;
+ };
+ 
+-extern struct intel_soc_pmic_config intel_soc_pmic_config_crc;
++extern struct intel_soc_pmic_config intel_soc_pmic_config_byt_crc;
++extern struct intel_soc_pmic_config intel_soc_pmic_config_cht_crc;
+ 
+ #endif	/* __INTEL_SOC_PMIC_CORE_H__ */
+diff --git a/drivers/mfd/intel_soc_pmic_crc.c b/drivers/mfd/intel_soc_pmic_crc.c
+index 4a7494872da2..6d19a6d0fb97 100644
+--- a/drivers/mfd/intel_soc_pmic_crc.c
++++ b/drivers/mfd/intel_soc_pmic_crc.c
+@@ -80,7 +80,7 @@ static struct resource bcu_resources[] = {
+ 	},
+ };
+ 
+-static struct mfd_cell crystal_cove_dev[] = {
++static struct mfd_cell crystal_cove_byt_dev[] = {
+ 	{
+ 		.name = "crystal_cove_pwrsrc",
+ 		.num_resources = ARRAY_SIZE(pwrsrc_resources),
+@@ -114,6 +114,17 @@ static struct mfd_cell crystal_cove_dev[] = {
+ 	},
+ };
+ 
++static struct mfd_cell crystal_cove_cht_dev[] = {
++	{
++		.name = "crystal_cove_gpio",
++		.num_resources = ARRAY_SIZE(gpio_resources),
++		.resources = gpio_resources,
++	},
++	{
++		.name = "crystal_cove_pwm",
++	},
++};
++
+ static const struct regmap_config crystal_cove_regmap_config = {
+ 	.reg_bits = 8,
+ 	.val_bits = 8,
+@@ -155,10 +166,18 @@ static const struct regmap_irq_chip crystal_cove_irq_chip = {
+ 	.mask_base = CRYSTAL_COVE_REG_MIRQLVL1,
+ };
+ 
+-struct intel_soc_pmic_config intel_soc_pmic_config_crc = {
++struct intel_soc_pmic_config intel_soc_pmic_config_byt_crc = {
++	.irq_flags = IRQF_TRIGGER_RISING,
++	.cell_dev = crystal_cove_byt_dev,
++	.n_cell_devs = ARRAY_SIZE(crystal_cove_byt_dev),
++	.regmap_config = &crystal_cove_regmap_config,
++	.irq_chip = &crystal_cove_irq_chip,
++};
++
++struct intel_soc_pmic_config intel_soc_pmic_config_cht_crc = {
+ 	.irq_flags = IRQF_TRIGGER_RISING,
+-	.cell_dev = crystal_cove_dev,
+-	.n_cell_devs = ARRAY_SIZE(crystal_cove_dev),
++	.cell_dev = crystal_cove_cht_dev,
++	.n_cell_devs = ARRAY_SIZE(crystal_cove_cht_dev),
+ 	.regmap_config = &crystal_cove_regmap_config,
+ 	.irq_chip = &crystal_cove_irq_chip,
+ };
+-- 
+2.11.0
+

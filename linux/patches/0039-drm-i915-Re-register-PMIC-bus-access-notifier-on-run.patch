@@ -1,0 +1,66 @@
+From 0d96935f820b7a45aa80baa7f6c01897056f6412 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 18 May 2017 12:11:58 +0200
+Subject: [PATCH 39/91] drm/i915: Re-register PMIC bus access notifier on
+ runtime resume
+
+intel_uncore_suspend() unregisters the uncore code's PMIC bus access
+notifier and gets called on both normal and runtime suspend.
+
+intel_uncore_resume_early() re-registers the notifier, but only on
+normal resume. Add a new intel_uncore_runtime_resume() function which
+only re-registers the notifier and call that on runtime resume.
+
+Reported-by: Imre Deak <imre.deak@intel.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/gpu/drm/i915/i915_drv.c     | 2 ++
+ drivers/gpu/drm/i915/i915_drv.h     | 1 +
+ drivers/gpu/drm/i915/intel_uncore.c | 6 ++++++
+ 3 files changed, 9 insertions(+)
+
+diff --git a/drivers/gpu/drm/i915/i915_drv.c b/drivers/gpu/drm/i915/i915_drv.c
+index 48428672fc6e..591436fbd62c 100644
+--- a/drivers/gpu/drm/i915/i915_drv.c
++++ b/drivers/gpu/drm/i915/i915_drv.c
+@@ -2469,6 +2469,8 @@ static int intel_runtime_resume(struct device *kdev)
+ 		ret = vlv_resume_prepare(dev_priv, true);
+ 	}
+ 
++	intel_uncore_runtime_resume(dev_priv);
++
+ 	/*
+ 	 * No point of rolling back things in case of an error, as the best
+ 	 * we can do is to hope that things will still work (and disable RPM).
+diff --git a/drivers/gpu/drm/i915/i915_drv.h b/drivers/gpu/drm/i915/i915_drv.h
+index 2c453a4e97d5..81e0c17c012a 100644
+--- a/drivers/gpu/drm/i915/i915_drv.h
++++ b/drivers/gpu/drm/i915/i915_drv.h
+@@ -3084,6 +3084,7 @@ extern bool intel_uncore_arm_unclaimed_mmio_detection(struct drm_i915_private *d
+ extern void intel_uncore_fini(struct drm_i915_private *dev_priv);
+ extern void intel_uncore_suspend(struct drm_i915_private *dev_priv);
+ extern void intel_uncore_resume_early(struct drm_i915_private *dev_priv);
++extern void intel_uncore_runtime_resume(struct drm_i915_private *dev_priv);
+ const char *intel_uncore_forcewake_domain_to_str(const enum forcewake_domain_id id);
+ void intel_uncore_forcewake_get(struct drm_i915_private *dev_priv,
+ 				enum forcewake_domains domains);
+diff --git a/drivers/gpu/drm/i915/intel_uncore.c b/drivers/gpu/drm/i915/intel_uncore.c
+index dc5e4f3e5a43..882cf7187a57 100644
+--- a/drivers/gpu/drm/i915/intel_uncore.c
++++ b/drivers/gpu/drm/i915/intel_uncore.c
+@@ -438,6 +438,12 @@ void intel_uncore_resume_early(struct drm_i915_private *dev_priv)
+ 	i915_check_and_clear_faults(dev_priv);
+ }
+ 
++void intel_uncore_runtime_resume(struct drm_i915_private *dev_priv)
++{
++	iosf_mbi_register_pmic_bus_access_notifier(
++		&dev_priv->uncore.pmic_bus_access_nb);
++}
++
+ void intel_uncore_sanitize(struct drm_i915_private *dev_priv)
+ {
+ 	i915.enable_rc6 = sanitize_rc6_option(dev_priv, i915.enable_rc6);
+-- 
+2.11.0
+
