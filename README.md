@@ -47,8 +47,8 @@ Except for distribution related commands, this documentation can be useful for:
  * Xorg & XWayland **{OK}**
    - OpenGL **{OK}**
    - Resize-and-Rotate(randr) **{OK}**
- * Screen backlight **{i}**
- * Light sensor **/!\**
+ * Screen backlight **{OK}**
+ * Light sensor **{X}**
  * Switch to External Screen (HDMI)  **{OK}**
  * Mouse
    - Built-in (Touchpad) **{OK}**
