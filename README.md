@@ -43,7 +43,7 @@ Except for distribution related commands, this documentation can be useful for:
  * Reboot **{OK}**
  * Hibernation **{OK}**
  * Sleep / Suspend **{OK}**
- * Battery monitor **{i}**
+ * Battery monitor **{OK}**
  * Xorg & XWayland **{OK}**
    - OpenGL **{OK}**
    - Resize-and-Rotate(randr) **{OK}**
@@ -59,17 +59,10 @@ Except for distribution related commands, this documentation can be useful for:
  * Sound **{i}**
  * MicroSD card reader **{OK}**
  * Built-in camera **{X}**
- * Accelerometers **{X}**
+ * Accelerometers **{OK}**
 
 Legend : **{OK}** = OK ; **{X}** = Unsupported(No Driver) ; **/!\** = Error (Couldn't get it working); **[?]** = Unknown, Not Test; **[-]** = Not-applicable; **{i}** = Configuration Required/ needs the kernel patches from sunxi (also hosted here) ;  **X-(** = Only works with a non-free driver and or firmware
 
-
-# Repositories
-
-```
-**[Linux Kernel]     (https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git)**
-**[Linux Kernel - Sunxi]     (http://linux-sunxi.org/Main_Page)**
-```
 
 ## Important Notes
 
@@ -149,16 +142,7 @@ Once the system has booted sucessfully, it needs some tweaking:
 
 
 ```
- * WiFi
- * Kernel
- * Bootloader
- * Power Management
- * Status, Intel Crystal Cove PMIC
- * Screen brightness
- * CPU C-states issue with the internal eMMC
- * Touchscreen
  * Audio
- * microSD Card Reader
  * Built-in camera
 ```
 
