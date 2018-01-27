@@ -1,19 +1,7 @@
-#      _____________________________________________________________________
-#    //                                                                     \\
-#   [|  linux-baytrail-flexx10                                               |]
-#   [|                                                                       |]
-#   [|  Install GNU/Linux on NextBook Flexx 10.1 Baytrail                    |]
-#   [|                                                                       |]
-#   [|                                  Antonio Cao (@burzumishi) 2015-2016  |]
-#   [|                                                                       |]
-#    \\_____________________________________________________________________//
+You need UCM files from https://github.com/plbossart/UCM/tree/master/bytcr-rt5640
 
-Introduction
------
+follow instructions there
 
+also hdmi might be messing with pulseaudio, so blacklist it
 
-Documentation
------
-
-
-
+echo 'blacklist snd_hdmi_lpe_audio' >> /etc/modprobe.d/50-block-hdmi-audio.conf
