@@ -1,3 +1,9 @@
+# UPDATE 12/10/2021
+
+**LINUXIUM** offers updated **Ubuntu** images to this devices: https://linuxiumcomau.blogspot.com/search/label/ISOs
+
+Customize **Ubuntu** images using **"isorespin.sh"**: https://www.linuxium.com.au/how-tos/customizing-ubuntu-isos-documentation-and-examples-of-how-to-use-isorespin-sh
+
 # Introduction
 
 This project is an efford to get **GNU/Linux** running on **[Nextbook Flexx 10.1"] (http://nextbookusa.com/productdetail.php?product_id=26)** Intel Atom Bay Trail (ASoC) device. 
