@@ -1,6 +1,6 @@
 # UPDATE 12/10/2021
 
-**LINUXIUM** offers updated **Ubuntu** images to this devices: https://linuxiumcomau.blogspot.com/search/label/ISOs
+**LINUXIUM** offers updated **Ubuntu** images to these devices: https://linuxiumcomau.blogspot.com/search/label/ISOs
 
 Customize **Ubuntu** images using **"isorespin.sh"**: https://www.linuxium.com.au/how-tos/customizing-ubuntu-isos-documentation-and-examples-of-how-to-use-isorespin-sh
 
